@@ -7,6 +7,7 @@ import { getStripeProductByName } from '../stripe-config';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { stripeProducts } from '../stripe-config';
 
 interface ProductCardProps {
   product: Product;
