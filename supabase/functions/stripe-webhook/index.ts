@@ -91,6 +91,22 @@ async function handleEvent(event: Stripe.Event) {
       await syncCustomerFromStripe(customerId);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
+        // Fetch line items from the checkout session
+        const lineItems = await stripe.checkout.sessions.listLineItems(checkout_session_id, {
+          expand: ['data.price.product']
+        });
+
+        // Map line items to our database format
+        const formattedLineItems = lineItems.data.map(item => ({
+          product_id: typeof item.price?.product === 'object' ? item.price.product.id : item.price?.product,
+          name: typeof item.price?.product === 'object' ? item.price.product.name : 'Unknown Product',
+          description: typeof item.price?.product === 'object' ? item.price.product.description : null,
+          unit_amount: item.price?.unit_amount || 0,
+          quantity: item.quantity || 1,
+          currency: item.price?.currency || 'eur',
+          image_url: typeof item.price?.product === 'object' && item.price.product.images ? item.price.product.images[0] : null
+        }));
+
         // Extract the necessary information from the session
         const {
           id: checkout_session_id,
@@ -122,6 +138,7 @@ async function handleEvent(event: Stripe.Event) {
           currency,
           payment_status,
           status: 'completed', // assuming we want to mark it as completed since payment is successful
+          line_items: formattedLineItems,
           ...shippingData,
         });
 
