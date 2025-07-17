@@ -31,15 +31,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleBuyNow = async () => {
     console.log('🚀 Buy Now clicked for product:', product.name);
-    console.log('👤 User status:', { user: !!user, session: !!session });
-    
-    if (!user || !session) {
-      console.log('❌ User not authenticated, redirecting to login');
-      navigate('/login');
-      return;
-    }
-
-    console.log('✅ User authenticated, starting checkout process');
+    console.log('🛒 Starting checkout process');
     
     const stripeProduct = getStripeProductByName(product.name);
     if (!stripeProduct) {
@@ -69,10 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: window.location.href,
           delivery_instructions: '', // Can be extended to collect from user input
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        }
       });
 
       if (error) {

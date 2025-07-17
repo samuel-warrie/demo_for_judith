@@ -22,14 +22,6 @@ export default function Cart({ isOpen, onClose }: CartProps) {
   const handleCheckout = async () => {
     console.log('🛒 Cart checkout initiated');
     console.log('📦 Cart items:', items);
-    console.log('👤 User status:', { user: !!user, session: !!session });
-    
-    if (!user || !session) {
-      console.log('❌ User not authenticated, redirecting to login');
-      onClose();
-      navigate('/login');
-      return;
-    }
 
     if (items.length === 0) {
       console.log('❌ Cart is empty');
@@ -70,10 +62,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
           success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: window.location.href,
           delivery_instructions: '', // Can be extended to collect from user input
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        }
       });
 
       if (error) {
