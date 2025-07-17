@@ -91,10 +91,17 @@ async function handleEvent(event: Stripe.Event) {
       await syncCustomerFromStripe(customerId);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
+        // Extract checkout session ID at the beginning
+        const checkoutSessionId = (stripeData as Stripe.Checkout.Session).id;
+        console.log('Processing one-time payment for session:', checkoutSessionId);
+        
         // Fetch line items from the checkout session
-        const lineItems = await stripe.checkout.sessions.listLineItems(checkout_session_id, {
+        const lineItems = await stripe.checkout.sessions.listLineItems(checkoutSessionId, {
           expand: ['data.price.product']
         });
+        
+        console.log('Fetched line items from Stripe:', lineItems.data.length, 'items');
+        console.log('Line items data:', JSON.stringify(lineItems.data, null, 2));
 
         // Map line items to our database format
         const formattedLineItems = lineItems.data.map(item => ({
@@ -106,10 +113,11 @@ async function handleEvent(event: Stripe.Event) {
           currency: item.price?.currency || 'eur',
           image_url: typeof item.price?.product === 'object' && item.price.product.images ? item.price.product.images[0] : null
         }));
+        
+        console.log('Formatted line items for database:', JSON.stringify(formattedLineItems, null, 2));
 
         // Extract the necessary information from the session
         const {
-          id: checkout_session_id,
           payment_intent,
           amount_subtotal,
           amount_total,
@@ -130,7 +138,7 @@ async function handleEvent(event: Stripe.Event) {
 
         // Insert the order into the stripe_orders table
         const { error: orderError } = await supabase.from('stripe_orders').insert({
-          checkout_session_id,
+          checkout_session_id: checkoutSessionId,
           payment_intent_id: payment_intent,
           customer_id: customerId,
           amount_subtotal,
@@ -144,11 +152,27 @@ async function handleEvent(event: Stripe.Event) {
 
         if (orderError) {
           console.error('Error inserting order:', orderError);
+          console.error('Order data that failed to insert:', {
+            checkout_session_id: checkoutSessionId,
+            payment_intent_id: payment_intent,
+            customer_id: customerId,
+            amount_subtotal,
+            amount_total,
+            currency,
+            payment_status,
+            status: 'completed',
+            line_items: formattedLineItems,
+            ...shippingData,
+          });
           return;
         }
-        console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
+        
+        console.info(`Successfully processed one-time payment for session: ${checkoutSessionId}`);
+        console.info(`Inserted ${formattedLineItems.length} line items into database`);
       } catch (error) {
         console.error('Error processing one-time payment:', error);
+        console.error('Customer ID:', customerId);
+        console.error('Stripe data:', JSON.stringify(stripeData, null, 2));
       }
     }
   }
