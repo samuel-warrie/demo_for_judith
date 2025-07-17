@@ -11,8 +11,6 @@ import PriceFilter from './components/PriceFilter';
 import SortFilter from './components/SortFilter';
 import ProductGrid from './components/ProductGrid';
 import SuccessPage from './pages/SuccessPage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
 import { products } from './data/products';
 import { Product } from './types';
 
@@ -69,23 +67,6 @@ function HomePage() {
       <Header onSearchChange={setSearchQuery} />
       
       {/* User Subscription Status */}
-      {user && (
-        <div className="bg-green-50 border-b border-green-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium text-gray-900">
-                  ✅ Logged in as: {user.email}
-                </span>
-              </div>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                Ready to checkout
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Hero Section */}
       <div className="bg-black text-white">
@@ -182,8 +163,6 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
       <Route path="/success" element={<SuccessPage />} />
     </Routes>
   );
