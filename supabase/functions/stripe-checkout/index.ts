@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
     }
 
     const { price_id, line_items, success_url, cancel_url, mode } = await req.json();
+    const { metadata } = await req.json();
 
     // Validate parameters - either price_id OR line_items should be provided
     let error;
@@ -101,9 +102,9 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'GB', 'DK', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'SE', 'NO', 'FI', 'AU', 'NZ']
-      },
+      billing_address_collection: 'required',
+      customer_creation: 'always',
+      ...(metadata && { metadata }),
     };
     
     if (line_items) {

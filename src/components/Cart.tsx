@@ -61,7 +61,10 @@ export default function Cart({ isOpen, onClose }: CartProps) {
           mode: 'payment', // All products are one-time payments
           success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: window.location.href,
-          delivery_instructions: '', // Can be extended to collect from user input
+          metadata: {
+            order_type: 'product_purchase',
+            terms_accepted: 'true' // Products don't require explicit T&C acceptance
+          }
         }
       });
 

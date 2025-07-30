@@ -44,7 +44,15 @@ export default function BookingPage() {
           price_id: bookingDepositProduct.priceId,
           mode: bookingDepositProduct.mode,
           success_url: `${window.location.origin}/booking-success`,
-          cancel_url: `${window.location.origin}/book`
+          cancel_url: `${window.location.origin}/book`,
+          metadata: {
+            booking_type: 'appointment_deposit',
+            terms_accepted: 'true',
+            adult_media_consent: adultMediaConsent,
+            has_minor: hasMinor.toString(),
+            child_media_consent: hasMinor ? childMediaConsent : 'not_applicable',
+            consent_timestamp: new Date().toISOString()
+          }
         }
       });
       
