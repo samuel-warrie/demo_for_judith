@@ -10,7 +10,13 @@ export default function BookingSuccessPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          window.location.href = 'https://www.fresha.com';
+          // Use assign for better mobile compatibility
+          try {
+            window.location.assign('https://www.fresha.com');
+          } catch (error) {
+            // Fallback for mobile browsers
+            window.open('https://www.fresha.com', '_self');
+          }
           return 0;
         }
         return prev - 1;
@@ -48,7 +54,8 @@ export default function BookingSuccessPage() {
           </div>
 
           <a
-            href="https://www.fresha.com/your-booking-link-here"
+            href="https://www.fresha.com"
+            target="_self"
             className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
           >
             <Calendar className="w-4 h-4 mr-2" />
