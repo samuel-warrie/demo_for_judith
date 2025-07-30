@@ -103,6 +103,20 @@ Deno.serve(async (req) => {
       cancel_url,
       billing_address_collection: 'required',
       customer_creation: 'always',
+      custom_fields: [
+        {
+          key: 'full_name',
+          label: {
+            type: 'custom',
+            custom: 'Full Name'
+          },
+          type: 'text',
+          text: {
+            minimum_length: 1,
+            maximum_length: 100
+          }
+        }
+      ],
       ...(metadata && { metadata }),
     };
     
