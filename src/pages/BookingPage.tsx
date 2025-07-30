@@ -424,7 +424,7 @@ export default function BookingPage() {
             <div className="bg-gray-50 rounded-xl p-6 mb-8 max-w-md mx-auto">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-gray-700">Booking Deposit:</span>
-                <span className="text-2xl font-bold text-gray-900">€10.00</span>
+                <span className="text-2xl font-bold text-gray-900">€{bookingDepositProduct.price.toFixed(2)}</span>
               </div>
               <div className="text-sm text-gray-500 space-y-1">
                 <p>• Applied to your final bill</p>
