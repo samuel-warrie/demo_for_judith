@@ -366,7 +366,6 @@ export default function BookingPage() {
                       type="checkbox"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      disabled={!canAcceptTerms}
                       className="mt-1 rounded"
                     />
                     <span className="text-sm text-gray-700">

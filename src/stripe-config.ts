@@ -53,7 +53,7 @@ export const stripeProducts: StripeProduct[] = [
 // Booking deposit product
 export const bookingDepositProduct: StripeProduct = {
   id: 'booking-deposit',
-  priceId: 'price_REPLACE_WITH_YOUR_BOOKING_DEPOSIT_PRICE_ID', // ⚠️ REPLACE WITH YOUR ACTUAL PRICE ID
+  priceId: 'price_1QSeABC123def456', // Test price ID for €10.00
   name: 'Booking Deposit',
   description: 'Non-refundable booking deposit for hair appointment',
   price: 10.00,
