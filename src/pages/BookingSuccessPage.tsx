@@ -1,14 +1,24 @@
 import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CheckCircle, Calendar, ExternalLink } from 'lucide-react';
 
 export default function BookingSuccessPage() {
+  const [countdown, setCountdown] = useState(3);
+
   useEffect(() => {
-    // Redirect to Fresha after 3 seconds
-    const timer = setTimeout(() => {
-      window.location.href = 'https://www.fresha.com';
-    }, 3000);
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          window.location.href = 'https://www.fresha.com';
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     
-    return () => clearTimeout(timer);
+    return () => clearInterval(countdownInterval);
   }, []);
 
   return (
@@ -28,9 +38,14 @@ export default function BookingSuccessPage() {
           </p>
 
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <p className="text-sm text-gray-600">
-              Redirecting to booking system in 3 seconds...
-            </p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-lg">
+                {countdown}
+              </div>
+              <p className="text-sm text-gray-600">
+                Redirecting to booking system...
+              </p>
+            </div>
           </div>
 
           <a
