@@ -20,3 +20,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
       storage: localStorage
     }
   });
+}
