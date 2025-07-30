@@ -364,9 +364,9 @@ export default function BookingPage() {
                   <label className="flex items-start space-x-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={canAcceptTerms}
-                      onChange={() => {}} // Controlled by media consent selections
-                      disabled={!canAcceptTerms}
+                     checked={termsAccepted}
+                     onChange={(e) => setTermsAccepted(e.target.checked)}
+                     disabled={!canAcceptTerms}
                       className="mt-1 rounded"
                     />
                     <span className="text-sm text-gray-700">
@@ -393,10 +393,10 @@ export default function BookingPage() {
                   Back
                 </button>
                 <button
-                  onClick={handleAcceptTerms}
-                  disabled={!canAcceptTerms}
+                 onClick={handleAcceptTerms}
+                 disabled={!canAcceptTerms || !termsAccepted}
                   className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                    canAcceptTerms
+                   canAcceptTerms && termsAccepted
                       ? 'bg-black text-white hover:bg-gray-800'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
