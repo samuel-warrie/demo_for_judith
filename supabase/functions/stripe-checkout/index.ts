@@ -101,7 +101,6 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
-      billing_address_collection: 'required',
       customer_creation: 'always',
       custom_fields: [
         {
