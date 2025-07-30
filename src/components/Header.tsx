@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Menu, X } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Calendar } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import Cart from './Cart';
@@ -31,6 +31,20 @@ export default function Header({ onSearchChange }: HeaderProps) {
               <Link to="/" className="text-2xl font-bold text-black">
                 Beloved Beauty
               </Link>
+              <nav className="hidden md:flex items-center space-x-8 ml-8">
+                <Link 
+                  to="/" 
+                  className="text-gray-600 hover:text-black transition-colors"
+                >
+                  Shop
+                </Link>
+                <Link 
+                  to="/book" 
+                  className="text-gray-600 hover:text-black transition-colors"
+                >
+                  Book Appointment
+                </Link>
+              </nav>
             </div>
 
             {/* Desktop Search */}
@@ -92,6 +106,13 @@ export default function Header({ onSearchChange }: HeaderProps) {
                 
                 {/* Mobile Actions */}
                 <div className="flex items-center justify-around pt-2">
+                  <Link 
+                    to="/book"
+                    className="flex flex-col items-center space-y-1 text-gray-600"
+                  >
+                    <Calendar className="w-5 h-5" />
+                    <span className="text-xs">Book</span>
+                  </Link>
                   <button className="flex flex-col items-center space-y-1 text-gray-600">
                     <Heart className="w-5 h-5" />
                     <span className="text-xs">Wishlist</span>

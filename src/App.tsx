@@ -11,6 +11,7 @@ import PriceFilter from './components/PriceFilter';
 import SortFilter from './components/SortFilter';
 import ProductGrid from './components/ProductGrid';
 import SuccessPage from './pages/SuccessPage';
+import BookingPage from './pages/BookingPage';
 import { products } from './data/products';
 import { Product } from './types';
 
@@ -164,6 +165,7 @@ function AppContent() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/success" element={<SuccessPage />} />
+      <Route path="/book" element={<BookingPage />} />
     </Routes>
   );
 }

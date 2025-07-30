@@ -50,10 +50,23 @@ export const stripeProducts: StripeProduct[] = [
   }
 ];
 
+// Booking deposit product
+export const bookingDepositProduct: StripeProduct = {
+  id: 'booking-deposit',
+  priceId: 'price_REPLACE_WITH_YOUR_BOOKING_DEPOSIT_PRICE_ID', // ⚠️ REPLACE WITH YOUR ACTUAL PRICE ID
+  name: 'Booking Deposit',
+  description: 'Non-refundable booking deposit for hair appointment',
+  price: 10.00,
+  mode: 'payment'
+};
+
 export function getStripeProductByName(name: string): StripeProduct | undefined {
   return stripeProducts.find(product => product.name === name);
 }
 
 export function getStripeProductById(id: string): StripeProduct | undefined {
+  if (id === 'booking-deposit') {
+    return bookingDepositProduct;
+  }
   return stripeProducts.find(product => product.id === id);
 }
