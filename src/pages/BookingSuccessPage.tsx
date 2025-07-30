@@ -10,13 +10,8 @@ export default function BookingSuccessPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          // Use assign for better mobile compatibility
-          try {
-            window.location.assign('/booking-complete');
-          } catch (error) {
-            // Fallback for mobile browsers
-            window.open('/booking-complete', '_self');
-          }
+          // Redirect to Fresha booking system
+          window.location.href = 'https://fresha.com';
           return 0;
         }
         return prev - 1;
@@ -54,12 +49,13 @@ export default function BookingSuccessPage() {
           </div>
 
           <a
-            href="/booking-complete"
-            target="_self"
+            href="https://fresha.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
           >
             <Calendar className="w-4 h-4 mr-2" />
-            Continue to Booking
+            Continue to Fresha Booking
             <ExternalLink className="w-4 h-4 ml-2" />
           </a>
         </div>
