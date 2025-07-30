@@ -258,7 +258,7 @@ export default function BookingPage() {
                         className="mt-1"
                       />
                       <span className="text-sm text-gray-700">
-                        I give permission for Beloved Beauty and Hair Studio to take photos/videos of my service with my face visible, for use in marketing and promotional materials (e.g., social media, website).
+                        • I give permission for Beloved Beauty and Hair Studio to take photos/videos of my service with my face visible, for use in marketing and promotional materials (e.g., social media, website).
                       </span>
                     </label>
                     <label className="flex items-start space-x-3 cursor-pointer">
@@ -271,7 +271,7 @@ export default function BookingPage() {
                         className="mt-1"
                       />
                       <span className="text-sm text-gray-700">
-                        I do not give permission for any photos/videos of my service to be used for marketing purposes.
+                        • I do not give permission for any photos/videos of my service to be used for marketing purposes.
                       </span>
                     </label>
                     <label className="flex items-start space-x-3 cursor-pointer">
@@ -284,7 +284,7 @@ export default function BookingPage() {
                         className="mt-1"
                       />
                       <span className="text-sm text-gray-700">
-                        I give permission for media to be taken, but only if my face is not shown (face cropped or blurred).
+                        • I give permission for media to be taken, but only if my face is not shown (face cropped or blurred).
                       </span>
                     </label>
                   </div>
@@ -326,7 +326,7 @@ export default function BookingPage() {
                           className="mt-1"
                         />
                         <span className="text-sm text-gray-700">
-                          I give permission for Beloved Beauty and Hair Studio to take photos/videos of my child with their face visible, for use in marketing and promotional materials.
+                          • I give permission for Beloved Beauty and Hair Studio to take photos/videos of my child with their face visible, for use in marketing and promotional materials.
                         </span>
                       </label>
                       <label className="flex items-start space-x-3 cursor-pointer">
@@ -339,7 +339,7 @@ export default function BookingPage() {
                           className="mt-1"
                         />
                         <span className="text-sm text-gray-700">
-                          I do not give permission for any media of my child to be used for marketing purposes.
+                          • I do not give permission for any media of my child to be used for marketing purposes.
                         </span>
                       </label>
                       <label className="flex items-start space-x-3 cursor-pointer">
@@ -352,7 +352,7 @@ export default function BookingPage() {
                           className="mt-1"
                         />
                         <span className="text-sm text-gray-700">
-                          I give permission for media to be taken of my child, but only if their face is not shown.
+                          • I give permission for media to be taken of my child, but only if their face is not shown.
                         </span>
                       </label>
                     </div>
