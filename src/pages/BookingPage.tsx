@@ -8,13 +8,14 @@ type MediaConsentChild = 'child-visible' | 'child-none' | 'child-hidden';
 
 export default function BookingPage() {
   const [showTerms, setShowTerms] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [adultMediaConsent, setAdultMediaConsent] = useState<MediaConsentAdult | ''>('');
   const [childMediaConsent, setChildMediaConsent] = useState<MediaConsentChild | ''>('');
   const [hasMinor, setHasMinor] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const canAcceptTerms = adultMediaConsent !== '' && (!hasMinor || childMediaConsent !== '');
+  const canCheckTerms = adultMediaConsent !== '' && (!hasMinor || childMediaConsent !== '');
 
   const handleBookNow = () => {
     setShowTerms(true);
@@ -367,8 +368,8 @@ export default function BookingPage() {
                   <label className="flex items-start space-x-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      checked={termsChecked}
+                      onChange={(e) => setTermsChecked(e.target.checked)}
                       className="mt-1 rounded"
                     />
                     <span className="text-sm text-gray-700">
@@ -376,7 +377,7 @@ export default function BookingPage() {
                       <span className="text-red-500"> *</span>
                     </span>
                   </label>
-                  {!canAcceptTerms && (
+                  {!canCheckTerms && (
                     <p className="text-xs text-gray-500 mt-2 ml-6">
                       Please select your media consent preferences above to continue.
                     </p>
@@ -394,12 +395,12 @@ export default function BookingPage() {
                 >
                   Back
                 </button>
-                {termsAccepted && (
+                {termsChecked && (
                   <button
                     onClick={handleAcceptTerms}
-                    disabled={!canAcceptTerms}
+                    disabled={!canCheckTerms}
                     className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                      canAcceptTerms
+                      canCheckTerms
                         ? 'bg-black text-white hover:bg-gray-800'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
