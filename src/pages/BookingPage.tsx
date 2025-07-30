@@ -246,6 +246,7 @@ export default function BookingPage() {
                 {/* Adult Media Consent */}
                 <div>
                   <h4 className="font-medium text-gray-800 mb-3">Media Consent – Adults</h4>
+                  <p className="text-sm text-gray-600 mb-3">Please select one:</p>
                   <div className="space-y-2">
                     <label className="flex items-start space-x-3 cursor-pointer">
                       <input
@@ -257,7 +258,7 @@ export default function BookingPage() {
                         className="mt-1"
                       />
                       <span className="text-sm text-gray-700">
-                        I give permission for Beloved Beauty and Hair Studio to take photos/videos of my service with my face visible, for use in marketing and promotional materials.
+                        I give permission for Beloved Beauty and Hair Studio to take photos/videos of my service with my face visible, for use in marketing and promotional materials (e.g., social media, website).
                       </span>
                     </label>
                     <label className="flex items-start space-x-3 cursor-pointer">
