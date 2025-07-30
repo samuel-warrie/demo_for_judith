@@ -12,10 +12,10 @@ export default function BookingSuccessPage() {
           clearInterval(countdownInterval);
           // Use assign for better mobile compatibility
           try {
-            window.location.assign('https://www.fresha.com');
+            window.location.assign('/booking-complete');
           } catch (error) {
             // Fallback for mobile browsers
-            window.open('https://www.fresha.com', '_self');
+            window.open('/booking-complete', '_self');
           }
           return 0;
         }
@@ -54,7 +54,7 @@ export default function BookingSuccessPage() {
           </div>
 
           <a
-            href="https://www.fresha.com"
+            href="/booking-complete"
             target="_self"
             className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
           >
