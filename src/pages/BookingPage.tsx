@@ -38,6 +38,25 @@ export default function BookingPage() {
         hasMinor
       }));
       
+      // Convert consent values to descriptive text
+      const getAdultConsentText = (consent: MediaConsentAdult | '') => {
+        switch (consent) {
+          case 'visible': return 'I want my face to be used in marketing materials';
+          case 'none': return 'I do not want any photos/videos used for marketing';
+          case 'hidden': return 'I allow photos/videos but only with my face hidden/blurred';
+          default: return 'No option selected';
+        }
+      };
+
+      const getChildConsentText = (consent: MediaConsentChild | '') => {
+        switch (consent) {
+          case 'child-visible': return 'Parent allows child\'s face to be used in marketing materials';
+          case 'child-none': return 'Parent does not want any photos/videos of child used for marketing';
+          case 'child-hidden': return 'Parent allows photos/videos of child but only with face hidden/blurred';
+          default: return 'No option selected';
+        }
+      };
+
       // Create Stripe checkout session
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
@@ -47,10 +66,10 @@ export default function BookingPage() {
           cancel_url: `${window.location.origin}/book`,
           metadata: {
             booking_type: 'appointment_deposit',
-            terms_accepted: 'true',
-            adult_media_consent: adultMediaConsent,
+            terms_accepted: 'Customer has read and accepted all terms and conditions',
+            adult_media_consent: getAdultConsentText(adultMediaConsent),
             has_minor: hasMinor.toString(),
-            child_media_consent: hasMinor ? childMediaConsent : 'not_applicable',
+            child_media_consent: hasMinor ? getChildConsentText(childMediaConsent) : 'Not applicable - no minor involved',
             consent_timestamp: new Date().toISOString()
           }
         }
