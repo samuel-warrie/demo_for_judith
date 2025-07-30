@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
+// Check if Supabase is properly configured
+const isSupabaseConfigured = () => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== 'https://dummy.supabase.co');
+};
+
 interface SubscriptionData {
   subscription_status: string;
   price_id: string | null;
@@ -18,7 +25,7 @@ export function useSubscription() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !isSupabaseConfigured()) {
       setSubscription(null);
       setLoading(false);
       return;
