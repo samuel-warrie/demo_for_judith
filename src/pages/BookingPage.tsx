@@ -26,53 +26,11 @@ export default function BookingPage() {
   };
 
   const handlePayDeposit = async () => {
-    console.log('🏦 Initiating booking deposit payment');
+    // Replace this URL with your actual Stripe payment link
+    const stripePaymentLink = 'https://buy.stripe.com/test_your_payment_link_here';
     
-    // Get the booking deposit product configuration
-    const depositProduct = getStripeProductById('booking-deposit');
-    if (!depositProduct) {
-      console.error('❌ Booking deposit product not configured');
-      alert('Booking deposit configuration error. Please contact support.');
-      return;
-    }
-
-    setLoading(true);
-    console.log('⏳ Creating checkout session for booking deposit...');
-
-    try {
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          price_id: depositProduct.priceId,
-          mode: 'payment',
-          success_url: 'https://www.fresha.com',
-          cancel_url: window.location.href,
-          metadata: {
-            booking_type: 'hair_appointment',
-            adult_media_consent: adultMediaConsent,
-            child_media_consent: hasMinor ? childMediaConsent : 'n/a',
-          }
-        }
-      });
-
-      if (error) {
-        console.error('❌ Checkout error:', error);
-        alert(`Payment error: ${error.message || 'Unknown error'}`);
-        return;
-      }
-
-      if (data?.url) {
-        console.log('✅ Redirecting to payment:', data.url);
-        window.location.href = data.url;
-      } else {
-        console.error('❌ No checkout URL received');
-        alert('Payment setup failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('❌ Unexpected error:', error);
-      alert(`Unexpected error: ${error.message || 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
+    // Redirect to Stripe payment link
+    window.location.href = stripePaymentLink;
   };
 
   return (
