@@ -27,7 +27,7 @@ export default function BookingPage() {
 
   const handlePayDeposit = async () => {
     // Replace this URL with your actual Stripe payment link
-    const stripePaymentLink = 'https://buy.stripe.com/test_your_payment_link_here';
+    const stripePaymentLink = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
     
     // Redirect to Stripe payment link
     window.location.href = stripePaymentLink;
