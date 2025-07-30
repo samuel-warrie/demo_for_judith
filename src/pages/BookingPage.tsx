@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Calendar, CreditCard, FileText, Shield, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { getStripeProductById } from '../stripe-config';
+import { bookingDepositProduct } from '../stripe-config';
 
 type MediaConsentAdult = 'visible' | 'none' | 'hidden';
 type MediaConsentChild = 'child-visible' | 'child-none' | 'child-hidden';
@@ -26,7 +26,47 @@ export default function BookingPage() {
   };
 
   const handlePayDeposit = async () => {
-    // Store booking intent in localStorage before redirecting to Stripe
+    setLoading(true);
+    
+    try {
+      // Store booking intent in localStorage before redirecting to Stripe
+      localStorage.setItem('booking_intent', JSON.stringify({
+        timestamp: Date.now(),
+        adultMediaConsent,
+        childMediaConsent: hasMinor ? childMediaConsent : null,
+        hasMinor
+      }));
+      
+      // Create Stripe checkout session
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: bookingDepositProduct.priceId,
+          mode: bookingDepositProduct.mode,
+          success_url: `${window.location.origin}/booking-success`,
+          cancel_url: `${window.location.origin}/book`
+        }
+      });
+      
+      if (error) {
+        console.error('Error creating checkout session:', error);
+        alert('Failed to create payment session. Please try again.');
+        return;
+      }
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Failed to create payment session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayDepositOld = async () => {
     localStorage.setItem('booking_intent', JSON.stringify({
       timestamp: Date.now(),
       adultMediaConsent,
@@ -34,7 +74,6 @@ export default function BookingPage() {
       hasMinor
     }));
     
-    // Replace this URL with your actual Stripe payment link
     const stripePaymentLink = 'https://buy.stripe.com/test_your_payment_link_here';
     window.location.href = stripePaymentLink;
   };
