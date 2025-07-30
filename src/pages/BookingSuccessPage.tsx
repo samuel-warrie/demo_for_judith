@@ -12,7 +12,7 @@ export default function BookingSuccessPage() {
       
       // Redirect to Fresha after a short delay to show success message
       const timer = setTimeout(() => {
-        window.location.href = 'https://www.fresha.com/your-booking-link-here';
+        window.location.href = 'https://www.fresha.com';
       }, 3000);
       
       return () => clearTimeout(timer);
