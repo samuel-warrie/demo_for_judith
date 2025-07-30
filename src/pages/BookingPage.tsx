@@ -398,12 +398,7 @@ export default function BookingPage() {
                 {termsChecked && (
                   <button
                     onClick={handleAcceptTerms}
-                    disabled={!canCheckTerms}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                      canCheckTerms
-                        ? 'bg-black text-white hover:bg-gray-800'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
+                    className="bg-black text-white hover:bg-gray-800 px-6 py-3 rounded-xl font-semibold transition-colors"
                   >
                     Accept Terms & Continue
                   </button>
