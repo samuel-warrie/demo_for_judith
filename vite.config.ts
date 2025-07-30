@@ -11,7 +11,7 @@ export default defineConfig({
     headers: {
       'Content-Security-Policy': `
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.supabase.co;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' data: https://js.stripe.com https://*.supabase.co;
         style-src 'self' 'unsafe-inline';
         img-src 'self' data: https: blob:;
         font-src 'self' data:;
