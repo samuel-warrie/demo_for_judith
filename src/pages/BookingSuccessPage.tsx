@@ -3,20 +3,12 @@ import { CheckCircle, Calendar, ExternalLink } from 'lucide-react';
 
 export default function BookingSuccessPage() {
   useEffect(() => {
-    // Check if user came from booking flow
-    const bookingIntent = localStorage.getItem('booking_intent');
+    // Redirect to Fresha after 3 seconds
+    const timer = setTimeout(() => {
+      window.location.href = 'https://www.fresha.com';
+    }, 3000);
     
-    if (bookingIntent) {
-      // Clear the booking intent
-      localStorage.removeItem('booking_intent');
-      
-      // Redirect to Fresha after a short delay to show success message
-      const timer = setTimeout(() => {
-        window.location.href = 'https://www.fresha.com';
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   return (
