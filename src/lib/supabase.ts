@@ -21,3 +21,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
     }
   });
 }
+
+export { supabase };
