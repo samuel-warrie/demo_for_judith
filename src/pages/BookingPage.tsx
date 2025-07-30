@@ -394,17 +394,19 @@ export default function BookingPage() {
                 >
                   Back
                 </button>
-                <button
-                  onClick={handleAcceptTerms}
-                  disabled={!canAcceptTerms || !termsAccepted}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                    canAcceptTerms && termsAccepted
-                      ? 'bg-black text-white hover:bg-gray-800'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Accept Terms & Continue
-                </button>
+                {termsAccepted && (
+                  <button
+                    onClick={handleAcceptTerms}
+                    disabled={!canAcceptTerms}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+                      canAcceptTerms
+                        ? 'bg-black text-white hover:bg-gray-800'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Accept Terms & Continue
+                  </button>
+                )}
               </div>
             </div>
           </div>
