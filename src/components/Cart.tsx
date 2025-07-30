@@ -28,6 +28,15 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       return;
     }
 
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      alert('Payment system is not configured. Please set up Supabase environment variables to enable payments.');
+      return;
+    }
+
     setLoading(true);
     console.log('⏳ Processing cart checkout...');
 

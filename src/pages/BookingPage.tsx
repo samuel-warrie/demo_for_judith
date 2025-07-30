@@ -30,6 +30,15 @@ export default function BookingPage() {
     setLoading(true);
     
     try {
+      // Check if Supabase is properly configured
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        alert('Payment system is not configured. Please set up Supabase environment variables to enable payments.');
+        return;
+      }
+      
       // Store booking intent in localStorage before redirecting to Stripe
       localStorage.setItem('booking_intent', JSON.stringify({
         timestamp: Date.now(),

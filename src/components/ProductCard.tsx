@@ -34,6 +34,15 @@ export default function ProductCard({ product }: ProductCardProps) {
     console.log('🚀 Buy Now clicked for product:', product.name);
     console.log('🛒 Starting checkout process');
     
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      alert('Payment system is not configured. Please set up Supabase environment variables to enable payments.');
+      return;
+    }
+    
     const stripeProduct = getStripeProductByName(product.name);
     if (!stripeProduct) {
       console.error('❌ Stripe product configuration not found for:', product.name);
