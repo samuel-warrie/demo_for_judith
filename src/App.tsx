@@ -12,6 +12,7 @@ import SortFilter from './components/SortFilter';
 import ProductGrid from './components/ProductGrid';
 import SuccessPage from './pages/SuccessPage';
 import BookingPage from './pages/BookingPage';
+import BookingSuccessPage from './pages/BookingSuccessPage';
 import { products } from './data/products';
 import { Product } from './types';
 
@@ -166,6 +167,7 @@ function AppContent() {
       <Route path="/" element={<HomePage />} />
       <Route path="/success" element={<SuccessPage />} />
       <Route path="/book" element={<BookingPage />} />
+      <Route path="/booking-success" element={<BookingSuccessPage />} />
     </Routes>
   );
 }

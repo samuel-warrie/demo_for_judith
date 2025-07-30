@@ -26,10 +26,16 @@ export default function BookingPage() {
   };
 
   const handlePayDeposit = async () => {
-    // Replace this URL with your actual Stripe payment link
-    const stripePaymentLink = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
+    // Store booking intent in localStorage before redirecting to Stripe
+    localStorage.setItem('booking_intent', JSON.stringify({
+      timestamp: Date.now(),
+      adultMediaConsent,
+      childMediaConsent: hasMinor ? childMediaConsent : null,
+      hasMinor
+    }));
     
-    // Redirect to Stripe payment link
+    // Replace this URL with your actual Stripe payment link
+    const stripePaymentLink = 'https://buy.stripe.com/test_your_payment_link_here';
     window.location.href = stripePaymentLink;
   };
 
