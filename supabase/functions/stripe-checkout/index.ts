@@ -43,8 +43,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    const { price_id, line_items, success_url, cancel_url, mode } = await req.json();
-    const { metadata } = await req.json();
+    const { price_id, line_items, success_url, cancel_url, mode, metadata } = await req.json();
 
     // Validate parameters - either price_id OR line_items should be provided
     let error;
@@ -134,7 +133,6 @@ Deno.serve(async (req) => {
   }
 });
 
-type ExpectedType = 'string' | { values: string[] };
 type ExpectedType = 'string' | 'array' | { values: string[] };
 type Expectations<T> = { [K in keyof T]: ExpectedType };
 
