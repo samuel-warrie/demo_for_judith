@@ -18,9 +18,9 @@ export interface Product {
   low_stock_threshold?: number;
   rating?: number;
   review_count?: number;
-  second_image_url?: string;
   stripe_product_id?: string;
   stripe_price_id?: string;
+  second_image_url?: string;
   created_at?: string;
   updated_at?: string;
 }
