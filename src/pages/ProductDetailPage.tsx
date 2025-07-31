@@ -86,7 +86,8 @@ export default function ProductDetailPage() {
 
   // Get description in current language with fallback to English
   const getDescription = () => {
-    const currentLang = i18n.language as keyof typeof product.descriptions;
+    const baseLang = i18n.language.split('-')[0] as keyof typeof product.descriptions;
+    const currentLang = baseLang;
     return product.descriptions[currentLang] || product.descriptions.en || '';
   };
 
