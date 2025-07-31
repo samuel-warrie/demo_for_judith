@@ -105,8 +105,10 @@ export function useProducts() {
     let channel: RealtimeChannel | null = null;
 
     if (isSupabaseConfigured()) {
+      console.log('Setting up real-time subscription for products...');
+      
       channel = supabase
-        .channel('products-changes')
+        .channel('public:products')
         .on(
           'postgres_changes',
           {
@@ -145,6 +147,15 @@ export function useProducts() {
         )
         .subscribe((status) => {
           console.log('Products real-time subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Successfully subscribed to products real-time updates');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Real-time subscription error - check if Realtime is enabled in Supabase');
+          } else if (status === 'TIMED_OUT') {
+            console.error('❌ Real-time subscription timed out');
+          } else if (status === 'CLOSED') {
+            console.log('🔌 Real-time subscription closed');
+          }
         });
     }
 
