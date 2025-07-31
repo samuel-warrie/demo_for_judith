@@ -28,6 +28,8 @@ function HomePage() {
   console.log('Products error:', error);
   console.log('Products data:', products);
   console.log('Products length:', products.length);
+  console.log('Filtered products:', filteredAndSortedProducts);
+  console.log('Filtered products length:', filteredAndSortedProducts.length);
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);

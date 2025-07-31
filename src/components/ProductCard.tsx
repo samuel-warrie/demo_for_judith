@@ -19,6 +19,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [loading, setLoading] = React.useState(false);
   const { user, session } = useAuth();
   const navigate = useNavigate();
+
+  // Debug logging
+  console.log('ProductCard rendering with product:', product);
+  console.log('Product image_url:', product.image_url);
+  console.log('Product name:', product.name);
+  console.log('Product price:', product.price);
   
   const lowStock = false; // Simplified since we're using in_stock boolean
   const outOfStock = !product.in_stock;
@@ -121,6 +127,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={product.image_url}
             alt={product.name}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+            onLoad={() => console.log('Image loaded successfully:', product.image_url)}
+            onError={(e) => {
+              console.error('Image failed to load:', product.image_url);
+              console.error('Image error event:', e);
+            }}
           />
         </Link>
         <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white">
