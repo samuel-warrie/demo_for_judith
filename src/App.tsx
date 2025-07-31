@@ -6,6 +6,9 @@ import { AuthProvider } from './context/AuthContext';
 import { useProducts } from './hooks/useProducts';
 import { useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboard from './pages/AdminDashboard';
+import LoginForm from './components/LoginForm';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import PriceFilter from './components/PriceFilter';
@@ -192,14 +195,27 @@ function HomePage() {
 }
 
 function AppContent() {
+  const [showLogin, setShowLogin] = useState(false);
+
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/success" element={<SuccessPage />} />
-      <Route path="/book" element={<BookingPage />} />
-      <Route path="/booking-success" element={<BookingSuccessPage />} />
-      <Route path="/product/:id" element={<ProductDetailPage />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/book" element={<BookingPage />} />
+        <Route path="/booking-success" element={<BookingSuccessPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route 
+          path="/admin" 
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } 
+        />
+      </Routes>
+      {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
+    </>
   );
 }
 

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Menu, X, Calendar } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Calendar, Settings, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
+import LoginForm from './LoginForm';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -13,8 +15,12 @@ interface HeaderProps {
 export default function Header({ onSearchChange }: HeaderProps) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +29,10 @@ export default function Header({ onSearchChange }: HeaderProps) {
     onSearchChange(query);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    setShowUserMenu(false);
+  };
 
   return (
     <>
@@ -67,6 +77,49 @@ export default function Header({ onSearchChange }: HeaderProps) {
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4">
               <LanguageSwitcher />
+              
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center space-x-2 p-2 text-gray-600 hover:text-black transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                  </button>
+                  
+                  {showUserMenu && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] z-50">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            navigate('/admin');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Admin Dashboard</span>
+                        </button>
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-black transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="text-sm">Sign In</span>
+                </button>
+              )}
+              
               <button className="p-2 text-gray-600 hover:text-pink-600 transition-colors">
                 <Heart className="w-5 h-5" />
               </button>
@@ -141,6 +194,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
       </header>
 
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
     </>
   );
 }
