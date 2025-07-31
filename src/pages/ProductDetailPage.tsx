@@ -90,8 +90,8 @@ export default function ProductDetailPage() {
   // Safe stock calculations with proper fallbacks
   const stockQuantity = product.stock_quantity ?? 0;
   const lowStockThreshold = product.low_stock_threshold ?? 5;
-  const lowStock = stockQuantity > 0 && stockQuantity <= lowStockThreshold;
-  const outOfStock = stockQuantity === 0;
+  const outOfStock = stockQuantity === 0 || !product.in_stock;
+  const lowStock = !outOfStock && stockQuantity > 0 && stockQuantity <= lowStockThreshold;
 
   // Get description in current language with fallback to English
   const getDescription = () => {

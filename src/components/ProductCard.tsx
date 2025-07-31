@@ -25,9 +25,14 @@ export default function ProductCard({ product }: ProductCardProps) {
   console.log('Product image_url:', product.image_url);
   console.log('Product name:', product.name);
   console.log('Product price:', product.price);
+  console.log('Product stock_quantity:', product.stock_quantity);
+  console.log('Product in_stock:', product.in_stock);
   
-  const lowStock = false; // Simplified since we're using in_stock boolean
-  const outOfStock = !product.in_stock;
+  // Proper stock calculations
+  const stockQuantity = product.stock_quantity ?? 0;
+  const lowStockThreshold = product.low_stock_threshold ?? 5;
+  const outOfStock = stockQuantity === 0 || !product.in_stock;
+  const lowStock = !outOfStock && stockQuantity > 0 && stockQuantity <= lowStockThreshold;
   
   // Get description in current language with fallback to English
   const getDescription = () => {
