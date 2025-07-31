@@ -271,16 +271,6 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Debug Info (remove in production) */}
-              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-                <h4 className="font-semibold text-yellow-800 mb-2">Debug Info:</h4>
-                <p><strong>Image URL:</strong> {product.image_url || 'Not set'}</p>
-                <p><strong>Stock:</strong> {stockQuantity}</p>
-                <p><strong>Low Stock Threshold:</strong> {lowStockThreshold}</p>
-                <p><strong>Descriptions:</strong> {JSON.stringify(product.descriptions)}</p>
-                <p><strong>Current Language:</strong> {i18n.language}</p>
-              </div>
-
               {/* Description */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
