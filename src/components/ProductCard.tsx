@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { stripeProducts } from '../stripe-config';
-import { useTranslation } from 'react-i18next';
 
 interface ProductCardProps {
   product: Product;

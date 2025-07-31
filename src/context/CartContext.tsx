@@ -74,10 +74,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'REMOVE_ITEM', payload: productId });
   };
 
-  const removeItem = (productId: string) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: productId });
-  };
-
   const updateQuantity = (productId: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
   };
