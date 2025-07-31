@@ -123,7 +123,7 @@ export default function ProductDetailPage() {
   // Create array of images - primary image and a second variant
   const images = product ? [
     product.image_url,
-    product.image_url // For now, using same image twice - you can add a second_image_url field to your database
+    product.second_image_url
   ].filter(Boolean) : [];
 
   const nextImage = () => {
