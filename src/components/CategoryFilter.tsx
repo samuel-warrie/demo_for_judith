@@ -1,13 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { categories } from '../data/products';
 
 interface CategoryFilterProps {
+  categories: Array<{ id: string; name: string; count: number }>;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
 }
 
-export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
+export default function CategoryFilter({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) {
   const { t } = useTranslation();
 
   const getTranslatedCategoryName = (categoryId: string) => {

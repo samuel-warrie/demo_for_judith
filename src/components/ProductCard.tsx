@@ -3,28 +3,32 @@ import { Star, Heart, ShoppingCart, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
-import { useInventory } from '../hooks/useInventory';
 import { getStripeProductByName } from '../stripe-config';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { stripeProducts } from '../stripe-config';
+import { useTranslation } from 'react-i18next';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addItem } = useCart();
   const [loading, setLoading] = React.useState(false);
-  const { getProductStock, isLowStock, isOutOfStock } = useInventory();
   const { user, session } = useAuth();
   const navigate = useNavigate();
   
-  const stockInfo = getProductStock(product.id);
-  const lowStock = isLowStock(product.id);
-  const outOfStock = isOutOfStock(product.id);
+  const lowStock = product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
+  const outOfStock = product.stock_quantity === 0;
+  
+  // Get description in current language with fallback to English
+  const getDescription = () => {
+    const currentLang = i18n.language as keyof typeof product.descriptions;
+    return product.descriptions[currentLang] || product.descriptions.en || '';
+  };
 
   const handleAddToCart = () => {
     if (!outOfStock) {
@@ -45,31 +49,29 @@ export default function ProductCard({ product }: ProductCardProps) {
       return;
     }
     
-    const stripeProduct = getStripeProductByName(product.name);
-    if (!stripeProduct) {
-      console.error('❌ Stripe product configuration not found for:', product.name);
-      console.log('📋 Available configured products:', stripeProducts.map(p => p.name));
-      alert('Product configuration error. Please check console for details.');
+    if (!product.stripe_price_id) {
+      console.error('❌ No Stripe price ID configured for product:', product.name);
+      alert('Product payment configuration error. Please contact support.');
       return;
     }
     
-    console.log('✅ Found Stripe product configuration:', stripeProduct);
+    console.log('✅ Using Stripe price ID:', product.stripe_price_id);
 
     setLoading(true);
     console.log('⏳ Calling Supabase Edge Function to create checkout session...');
     
     try {
       console.log('📡 Making request to stripe-checkout function with:', {
-        price_id: stripeProduct.priceId,
-        mode: stripeProduct.mode,
+        price_id: product.stripe_price_id,
+        mode: 'payment',
         success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: window.location.href,
       });
       
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
-          price_id: stripeProduct.priceId,
-          mode: stripeProduct.mode,
+          price_id: product.stripe_price_id,
+          mode: 'payment',
           success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: window.location.href,
           metadata: {
@@ -108,11 +110,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       <div className="relative overflow-hidden">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        <Link to={`/product/${product.id}`}>
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+          />
+        </Link>
         <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white">
           <Heart className="w-4 h-4 text-gray-600 hover:text-black" />
         </button>
@@ -131,15 +135,17 @@ export default function ProductCard({ product }: ProductCardProps) {
         {lowStock && !outOfStock && (
           <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
             <AlertTriangle className="w-3 h-3" />
-            <span>{t('products.lowStock', { count: stockInfo.stock })}</span>
+            <span>{t('products.lowStock', { count: product.stock_quantity })}</span>
           </div>
         )}
       </div>
       
       <div className="p-4">
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-black transition-colors">
-          {product.name}
-        </h3>
+        <Link to={`/product/${product.id}`}>
+          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-black transition-colors cursor-pointer">
+            {product.name}
+          </h3>
+        </Link>
         
         <div className="flex items-center space-x-1 mb-2">
           <div className="flex items-center">
@@ -154,11 +160,11 @@ export default function ProductCard({ product }: ProductCardProps) {
               />
             ))}
           </div>
-          <span className="text-xs text-gray-500">({product.reviewCount})</span>
+          <span className="text-xs text-gray-500">({product.review_count})</span>
         </div>
         
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {product.description}
+          {getDescription()}
         </p>
         
         {/* Stock Information */}
@@ -167,11 +173,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-sm text-red-600 font-medium">{t('products.outOfStock')}</span>
           ) : lowStock ? (
             <span className="text-sm text-orange-600 font-medium">
-              {t('products.lowStock', { count: stockInfo.stock })}
+              {t('products.lowStock', { count: product.stock_quantity })}
             </span>
           ) : (
             <span className="text-sm text-green-600 font-medium">
-              {t('products.inStock', { count: stockInfo.stock })}
+              {t('products.inStock', { count: product.stock_quantity })}
             </span>
           )}
         </div>

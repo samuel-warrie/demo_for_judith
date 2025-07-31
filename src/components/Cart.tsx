@@ -50,15 +50,14 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       const lineItems = [];
       
       for (const item of items) {
-        const stripeProduct = getStripeProductByName(item.name);
-        if (!stripeProduct) {
-          console.error('❌ Stripe product configuration not found for:', item.name);
-          alert(`Product configuration error for "${item.name}". Please check your Stripe configuration.`);
+        if (!item.stripe_price_id) {
+          console.error('❌ No Stripe price ID for product:', item.name);
+          alert(`Payment configuration error for "${item.name}". Please contact support.`);
           return;
         }
         
         lineItems.push({
-          price_id: stripeProduct.priceId,
+          price_id: item.stripe_price_id,
           quantity: item.quantity
         });
       }

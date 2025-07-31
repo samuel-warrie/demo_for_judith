@@ -1,15 +1,23 @@
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  image_url: string;
   category: string;
   rating: number;
-  reviewCount: number;
-  description: string;
-  stock: number;
-  lowStockThreshold: number;
+  review_count: number;
+  descriptions: {
+    en: string;
+    fi: string;
+    sv: string;
+  };
+  stock_quantity: number;
+  low_stock_threshold: number;
+  stripe_product_id?: string;
+  stripe_price_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CartItem extends Product {
@@ -24,5 +32,5 @@ export interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
-  updateProductStock: (productId: number, newStock: number) => void;
+  updateProductStock: (productId: string, newStock: number) => void;
 }

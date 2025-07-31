@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import { useInventory } from './hooks/useInventory';
+import { useProducts } from './hooks/useProducts';
 import { useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
 import Header from './components/Header';
@@ -14,12 +14,12 @@ import ProductGrid from './components/ProductGrid';
 import SuccessPage from './pages/SuccessPage';
 import BookingPage from './pages/BookingPage';
 import BookingSuccessPage from './pages/BookingSuccessPage';
-import { products } from './data/products';
+import ProductDetailPage from './pages/ProductDetailPage';
 import { Product } from './types';
 
 function HomePage() {
   const { t } = useTranslation();
-  const { getProductStock, isOutOfStock } = useInventory();
+  const { products, loading, error, getProductsByCategory } = useProducts();
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -28,12 +28,8 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products.filter((product: Product) => {
+    let filtered = getProductsByCategory(selectedCategory).filter((product: Product) => {
       // Category filter
-      if (selectedCategory !== 'all' && product.category !== selectedCategory) {
-        return false;
-      }
-      
       // Price filter
       if (product.price < priceRange[0] || product.price > priceRange[1]) {
         return false;
@@ -64,7 +60,25 @@ function HomePage() {
     });
 
     return filtered;
-  }, [selectedCategory, priceRange, sortBy, searchQuery]);
+  }, [products, selectedCategory, priceRange, sortBy, searchQuery, getProductsByCategory]);
+
+  // Calculate categories with counts
+  const categories = useMemo(() => [
+    { id: 'all', name: 'All Products', count: products.length },
+    { id: 'skincare', name: 'Skincare', count: products.filter(p => p.category === 'skincare').length },
+    { id: 'makeup', name: 'Makeup', count: products.filter(p => p.category === 'makeup').length }
+  ], [products]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to load products</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,6 +120,7 @@ function HomePage() {
           {/* Sidebar */}
           <div className="lg:w-64 space-y-6">
             <CategoryFilter
+              categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
             />
@@ -138,7 +153,7 @@ function HomePage() {
             </div>
 
             {/* Products Grid */}
-            <ProductGrid products={filteredAndSortedProducts} />
+            <ProductGrid products={filteredAndSortedProducts} loading={loading} />
           </div>
         </div>
       </div>
@@ -172,6 +187,7 @@ function AppContent() {
       <Route path="/success" element={<SuccessPage />} />
       <Route path="/book" element={<BookingPage />} />
       <Route path="/booking-success" element={<BookingSuccessPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
     </Routes>
   );
 }

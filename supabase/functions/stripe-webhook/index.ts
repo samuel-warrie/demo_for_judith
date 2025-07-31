@@ -169,6 +169,42 @@ async function handleEvent(event: Stripe.Event) {
         
         console.info(`Successfully processed one-time payment for session: ${checkoutSessionId}`);
         console.info(`Inserted ${formattedLineItems.length} line items into database`);
+        
+        // Update product stock quantities
+        console.log('📦 Updating product stock quantities...');
+        
+        for (const item of formattedLineItems) {
+          try {
+            // Find the product by stripe_product_id
+            const { data: productData, error: productError } = await supabase
+              .from('products')
+              .select('id, stock_quantity, name')
+              .eq('stripe_product_id', item.product_id)
+              .single();
+
+            if (productError || !productData) {
+              console.error(`❌ Product not found for Stripe product ID: ${item.product_id}`, productError);
+              continue;
+            }
+
+            const newStock = Math.max(0, productData.stock_quantity - item.quantity);
+            
+            const { error: updateError } = await supabase
+              .from('products')
+              .update({ stock_quantity: newStock })
+              .eq('id', productData.id);
+
+            if (updateError) {
+              console.error(`❌ Failed to update stock for product ${productData.name}:`, updateError);
+            } else {
+              console.log(`✅ Updated stock for ${productData.name}: ${productData.stock_quantity} → ${newStock}`);
+            }
+          } catch (stockError) {
+            console.error('❌ Error updating product stock:', stockError);
+          }
+        }
+        
+        console.log('📦 Stock update process completed');
       } catch (error) {
         console.error('Error processing one-time payment:', error);
         console.error('Customer ID:', customerId);

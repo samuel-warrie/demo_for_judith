@@ -4,8 +4,8 @@ import { Product, CartItem, CartContextType } from '../types';
 
 type CartAction = 
   | { type: 'ADD_ITEM'; payload: Product }
-  | { type: 'REMOVE_ITEM'; payload: number }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: number; quantity: number } }
+  | { type: 'REMOVE_ITEM'; payload: string }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAR_CART' };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -74,7 +74,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'REMOVE_ITEM', payload: productId });
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const removeItem = (productId: string) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: productId });
+  };
+
+  const updateQuantity = (productId: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
   };
 
@@ -82,7 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  const updateProductStock = (productId: number, newStock: number) => {
+  const updateProductStock = (productId: string, newStock: number) => {
     // This would update local state if needed
     console.log(`Stock updated for product ${productId}: ${newStock}`);
   };
