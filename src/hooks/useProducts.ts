@@ -30,9 +30,12 @@ export function useProducts() {
 
       if (fetchError) {
         console.error('Error fetching products:', fetchError);
+        console.error('Detailed error:', JSON.stringify(fetchError, null, 2));
         setError('Failed to load products');
         setProducts([]);
       } else {
+        console.log('Successfully fetched products:', data);
+        console.log('Number of products:', data?.length || 0);
         setProducts(data || []);
         setError(null);
       }

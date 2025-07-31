@@ -22,6 +22,13 @@ function HomePage() {
   const { products, loading, error, getProductsByCategory } = useProducts();
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
+
+  // Debug logging
+  console.log('Products loading state:', loading);
+  console.log('Products error:', error);
+  console.log('Products data:', products);
+  console.log('Products length:', products.length);
+
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
   const [sortBy, setSortBy] = useState('featured');
