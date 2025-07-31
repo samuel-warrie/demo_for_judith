@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Calendar, CreditCard, FileText, Shield, Camera } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { bookingDepositProduct } from '../stripe-config';
 
@@ -7,6 +8,7 @@ type MediaConsentAdult = 'visible' | 'none' | 'hidden';
 type MediaConsentChild = 'child-visible' | 'child-none' | 'child-hidden';
 
 export default function BookingPage() {
+  const { t } = useTranslation();
   const [showTerms, setShowTerms] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -121,8 +123,8 @@ export default function BookingPage() {
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Book Your Appointment</h1>
-            <p className="text-gray-600">Professional hair services at Beloved Beauty & Hair Studio</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('booking.title')}</h1>
+            <p className="text-gray-600">{t('booking.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -133,16 +135,15 @@ export default function BookingPage() {
             <div className="flex justify-center mb-6">
               <Calendar className="w-16 h-16 text-black" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Ready to Book?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('booking.readyToBook')}</h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Professional braiding, styling, and hair care services. A €10 booking deposit is required 
-              to secure your appointment and will be applied to your final bill.
+              {t('booking.description')}
             </p>
             <button
               onClick={handleBookNow}
               className="bg-black text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
             >
-              Book Now
+              {t('booking.bookNow')}
             </button>
           </div>
         )}
@@ -153,9 +154,9 @@ export default function BookingPage() {
             <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <FileText className="w-6 h-6 text-gray-700" />
-                <h2 className="text-xl font-bold text-gray-900">Terms and Conditions</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('booking.termsAndConditions')}</h2>
               </div>
-              <p className="text-gray-600 mt-2">Please read and accept our terms before proceeding</p>
+              <p className="text-gray-600 mt-2">{t('booking.termsDescription')}</p>
             </div>
 
             {/* Terms Content */}
@@ -280,7 +281,7 @@ export default function BookingPage() {
               <div className="space-y-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <Camera className="w-5 h-5 text-gray-700" />
-                  <h3 className="font-semibold text-gray-900">Media Consent</h3>
+                  <h3 className="font-semibold text-gray-900">{t('booking.mediaConsent')}</h3>
                 </div>
 
                 {/* Adult Media Consent */}
@@ -409,13 +410,13 @@ export default function BookingPage() {
                       className="mt-1 rounded"
                     />
                     <span className="text-sm text-gray-700">
-                      <span className="font-medium">I have read and agree to the terms and conditions</span>
+                      <span className="font-medium">{t('booking.iHaveRead')}</span>
                       <span className="text-red-500"> *</span>
                     </span>
                   </label>
                   {!canCheckTerms && (
                     <p className="text-xs text-gray-500 mt-2 ml-6">
-                      Please select your media consent preferences above to continue.
+                      {t('booking.selectConsent')}
                     </p>
                   )}
                 </div>
@@ -429,14 +430,14 @@ export default function BookingPage() {
                   onClick={() => setShowTerms(false)}
                   className="text-gray-600 hover:text-gray-800 transition-colors"
                 >
-                  Back
+                  {t('booking.back')}
                 </button>
                 {termsChecked && (
                   <button
                     onClick={handleAcceptTerms}
                     className="bg-black text-white hover:bg-gray-800 px-6 py-3 rounded-xl font-semibold transition-colors"
                   >
-                    Accept Terms & Continue
+                    {t('booking.acceptTerms')}
                   </button>
                 )}
               </div>
@@ -451,21 +452,20 @@ export default function BookingPage() {
                 <Check className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Terms Accepted</h2>
+           <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('booking.termsAccepted')}</h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Thank you for accepting our terms and conditions. To secure your appointment, 
-              please pay the €10 booking deposit. This amount will be applied to your final bill.
+             {t('booking.thankYou')}
             </p>
             
             <div className="bg-gray-50 rounded-xl p-6 mb-8 max-w-md mx-auto">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-gray-700">Booking Deposit:</span>
+               <span className="text-gray-700">{t('booking.bookingDeposit')}</span>
                 <span className="text-2xl font-bold text-gray-900">€{bookingDepositProduct.price.toFixed(2)}</span>
               </div>
               <div className="text-sm text-gray-500 space-y-1">
-                <p>• Applied to your final bill</p>
-                <p>• Secures your appointment slot</p>
-                <p>• Non-refundable if canceled &lt; 48hrs</p>
+               <p>• {t('booking.depositFeatures.appliedToBill')}</p>
+               <p>• {t('booking.depositFeatures.securesSlot')}</p>
+               <p>• {t('booking.depositFeatures.nonRefundable')}</p>
               </div>
             </div>
 
@@ -486,14 +486,14 @@ export default function BookingPage() {
               ) : (
                 <>
                   <CreditCard className="w-5 h-5" />
-                  <span>Pay Booking Deposit</span>
+                  <span>{t('booking.payBookingDeposit')}</span>
                 </>
               )}
             </button>
 
             <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500">
               <Shield className="w-4 h-4" />
-              <span>Secure payment powered by Stripe</span>
+              <span>{t('booking.securePayment')}</span>
             </div>
           </div>
         )}

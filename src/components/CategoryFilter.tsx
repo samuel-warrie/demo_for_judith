@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { categories } from '../data/products';
 
 interface CategoryFilterProps {
@@ -7,9 +8,24 @@ interface CategoryFilterProps {
 }
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
+  const { t } = useTranslation();
+
+  const getTranslatedCategoryName = (categoryId: string) => {
+    switch (categoryId) {
+      case 'all':
+        return t('categories.allProducts');
+      case 'skincare':
+        return t('categories.skincare');
+      case 'makeup':
+        return t('categories.makeup');
+      default:
+        return categoryId;
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('categories.allProducts')}</h3>
       <div className="space-y-2">
         {categories.map((category) => (
           <button
@@ -22,7 +38,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
             }`}
           >
             <div className="flex items-center justify-between">
-              <span>{category.name}</span>
+              <span>{getTranslatedCategoryName(category.id)}</span>
               <span className={`text-sm ${
                 selectedCategory === category.id ? 'text-black' : 'text-gray-400'
               }`}>

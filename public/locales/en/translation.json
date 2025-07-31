@@ -1,0 +1,121 @@
+{
+  "site": {
+    "title": "Beloved Beauty",
+    "tagline": "Beauty That Inspires",
+    "description": "Discover premium beauty products for your everyday glow"
+  },
+  "navigation": {
+    "shop": "Shop",
+    "bookAppointment": "Book Appointment",
+    "wishlist": "Wishlist",
+    "cart": "Cart"
+  },
+  "hero": {
+    "title": "Beauty That Inspires",
+    "subtitle": "Discover premium beauty products for your everyday glow",
+    "features": {
+      "freeShipping": "Free Shipping Over €5",
+      "returns": "30-Day Returns",
+      "expertApproved": "Expert Approved"
+    }
+  },
+  "categories": {
+    "allProducts": "All Products",
+    "skincare": "Skincare",
+    "makeup": "Makeup"
+  },
+  "filters": {
+    "priceRange": "Price Range",
+    "min": "Min",
+    "max": "Max",
+    "showingProducts": "Showing products from €{{min}} to €{{max}}",
+    "sortBy": "Sort by:",
+    "sortOptions": {
+      "featured": "Featured",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low",
+      "rating": "Highest Rated",
+      "newest": "Newest"
+    }
+  },
+  "products": {
+    "productsFound": "{{count}} product found",
+    "productsFound_other": "{{count}} products found",
+    "noProductsFound": "No products found",
+    "tryAdjusting": "Try adjusting your search or filters",
+    "inStock": "{{count}} in stock",
+    "lowStock": "Only {{count}} left in stock",
+    "outOfStock": "Out of Stock",
+    "addToCart": "Cart",
+    "buyNow": "Buy Now",
+    "processing": "Processing...",
+    "unavailable": "Unavailable",
+    "sale": "Sale"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDescription": "Add some beautiful products to get started!",
+    "each": "each",
+    "remove": "Remove",
+    "total": "Total:",
+    "proceedToCheckout": "Proceed to Checkout",
+    "clearCart": "Clear Cart",
+    "freeShipping": "Free shipping on orders over €5"
+  },
+  "booking": {
+    "title": "Book Your Appointment",
+    "subtitle": "Professional hair services at Beloved Beauty & Hair Studio",
+    "readyToBook": "Ready to Book?",
+    "description": "Professional braiding, styling, and hair care services. A €10 booking deposit is required to secure your appointment and will be applied to your final bill.",
+    "bookNow": "Book Now",
+    "termsAndConditions": "Terms and Conditions",
+    "termsDescription": "Please read and accept our terms before proceeding",
+    "mediaConsent": "Media Consent",
+    "termsAccepted": "Terms Accepted",
+    "thankYou": "Thank you for accepting our terms and conditions. To secure your appointment, please pay the €10 booking deposit. This amount will be applied to your final bill.",
+    "bookingDeposit": "Booking Deposit:",
+    "depositFeatures": {
+      "appliedToBill": "Applied to your final bill",
+      "securesSlot": "Secures your appointment slot",
+      "nonRefundable": "Non-refundable if canceled < 48hrs"
+    },
+    "payBookingDeposit": "Pay Booking Deposit",
+    "securePayment": "Secure payment powered by Stripe",
+    "back": "Back",
+    "acceptTerms": "Accept Terms & Continue",
+    "iHaveRead": "I have read and agree to the terms and conditions",
+    "selectConsent": "Please select your media consent preferences above to continue.",
+    "includesMinor": "This appointment includes a child/minor (under 18)"
+  },
+  "success": {
+    "paymentSuccessful": "Payment Successful!",
+    "thankYou": "Thank you for your purchase. Your order has been confirmed and will be processed shortly.",
+    "orderSummary": "Order Summary",
+    "orderNumber": "Order Number:",
+    "paymentStatus": "Payment Status:",
+    "estimatedDelivery": "Estimated Delivery:",
+    "itemsPurchased": "Items Purchased",
+    "continueShopping": "Continue Shopping",
+    "emailConfirmation": "You will receive an email confirmation shortly with your order details.",
+    "loadingOrder": "Loading your order...",
+    "pleaseWait": "Please wait while we retrieve your purchase details.",
+    "orderNotFound": "Order Not Found",
+    "returnToShop": "Return to Shop"
+  },
+  "bookingSuccess": {
+    "paymentSuccessful": "Payment Successful!",
+    "depositProcessed": "Your €10 booking deposit has been processed. You'll now be redirected to complete your appointment booking.",
+    "redirecting": "Redirecting to booking system...",
+    "continueToFresha": "Continue to Fresha Booking"
+  },
+  "footer": {
+    "title": "Beloved Beauty",
+    "description": "Your trusted destination for premium beauty products",
+    "copyright": "© 2024 Beloved Beauty Demo",
+    "builtFor": "Built for client presentation"
+  },
+  "search": {
+    "placeholder": "Search beauty products..."
+  }
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface SortFilterProps {
   sortBy: string;
@@ -7,12 +8,14 @@ interface SortFilterProps {
 }
 
 export default function SortFilter({ sortBy, onSortChange }: SortFilterProps) {
+  const { t } = useTranslation();
+
   const sortOptions = [
-    { value: 'featured', label: 'Featured' },
-    { value: 'price-low', label: 'Price: Low to High' },
-    { value: 'price-high', label: 'Price: High to Low' },
-    { value: 'rating', label: 'Highest Rated' },
-    { value: 'newest', label: 'Newest' }
+    { value: 'featured', label: t('filters.sortOptions.featured') },
+    { value: 'price-low', label: t('filters.sortOptions.priceLow') },
+    { value: 'price-high', label: t('filters.sortOptions.priceHigh') },
+    { value: 'rating', label: t('filters.sortOptions.rating') },
+    { value: 'newest', label: t('filters.sortOptions.newest') }
   ];
 
   return (

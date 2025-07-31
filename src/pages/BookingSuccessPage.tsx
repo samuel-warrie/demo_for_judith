@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Calendar, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function BookingSuccessPage() {
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
@@ -30,11 +32,11 @@ export default function BookingSuccessPage() {
           </div>
           
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Payment Successful!
+            {t('bookingSuccess.paymentSuccessful')}
           </h1>
           
           <p className="text-gray-600 mb-6">
-            Your €10 booking deposit has been processed. You'll now be redirected to complete your appointment booking.
+            {t('bookingSuccess.depositProcessed')}
           </p>
 
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -43,7 +45,7 @@ export default function BookingSuccessPage() {
                 {countdown}
               </div>
               <p className="text-sm text-gray-600">
-                Redirecting to booking system...
+                {t('bookingSuccess.redirecting')}
               </p>
             </div>
           </div>
@@ -55,7 +57,7 @@ export default function BookingSuccessPage() {
             className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
           >
             <Calendar className="w-4 h-4 mr-2" />
-            Continue to Fresha Booking
+           {t('bookingSuccess.continueToFresha')}
             <ExternalLink className="w-4 h-4 ml-2" />
           </a>
         </div>

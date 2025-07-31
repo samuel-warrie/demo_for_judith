@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { useInventory } from './hooks/useInventory';
@@ -17,6 +18,7 @@ import { products } from './data/products';
 import { Product } from './types';
 
 function HomePage() {
+  const { t } = useTranslation();
   const { getProductStock, isOutOfStock } = useInventory();
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
@@ -75,23 +77,23 @@ function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Beauty That Inspires
+              {t('hero.title')}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              Discover premium beauty products for your everyday glow
+              {t('hero.subtitle')}
             </p>
             <div className="flex justify-center space-x-8 text-sm">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>Free Shipping Over €5</span>
+                <span>{t('hero.features.freeShipping')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>30-Day Returns</span>
+                <span>{t('hero.features.returns')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>Expert Approved</span>
+                <span>{t('hero.features.expertApproved')}</span>
               </div>
             </div>
           </div>
@@ -119,16 +121,18 @@ function HomePage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedCategory === 'all' ? 'All Products' : 
+                  {selectedCategory === 'all' ? t('categories.allProducts') : 
+                   selectedCategory === 'skincare' ? t('categories.skincare') : 
+                   selectedCategory === 'makeup' ? t('categories.makeup') : 
                    selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
                 </h2>
                 <p className="text-gray-600 mt-1">
-                  {filteredAndSortedProducts.length} product{filteredAndSortedProducts.length !== 1 ? 's' : ''} found
+                  {t('products.productsFound', { count: filteredAndSortedProducts.length })}
                 </p>
               </div>
               
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">Sort by:</span>
+                <span className="text-sm text-gray-600">{t('filters.sortBy')}</span>
                 <SortFilter sortBy={sortBy} onSortChange={setSortBy} />
               </div>
             </div>
@@ -144,15 +148,15 @@ function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-black mb-4">
-              Beloved Beauty
+              {t('footer.title')}
             </h3>
             <p className="text-gray-600 mb-6">
-              Your trusted destination for premium beauty products
+              {t('footer.description')}
             </p>
             <div className="flex justify-center space-x-8 text-sm text-gray-500">
-              <span>© 2024 Beloved Beauty Demo</span>
+              <span>{t('footer.copyright')}</span>
               <span>•</span>
-              <span>Built for client presentation</span>
+              <span>{t('footer.builtFor')}</span>
             </div>
           </div>
         </div>

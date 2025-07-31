@@ -1,0 +1,121 @@
+{
+  "site": {
+    "title": "Beloved Beauty",
+    "tagline": "Skönhet som inspirerar",
+    "description": "Upptäck premium skönhetsprodukter för din dagliga glöd"
+  },
+  "navigation": {
+    "shop": "Handla",
+    "bookAppointment": "Boka tid",
+    "wishlist": "Önskelista",
+    "cart": "Varukorg"
+  },
+  "hero": {
+    "title": "Skönhet som inspirerar",
+    "subtitle": "Upptäck premium skönhetsprodukter för din dagliga glöd",
+    "features": {
+      "freeShipping": "Fri frakt över €5",
+      "returns": "30 dagars retur",
+      "expertApproved": "Expertgodkänd"
+    }
+  },
+  "categories": {
+    "allProducts": "Alla produkter",
+    "skincare": "Hudvård",
+    "makeup": "Smink"
+  },
+  "filters": {
+    "priceRange": "Prisintervall",
+    "min": "Min",
+    "max": "Max",
+    "showingProducts": "Visar produkter från €{{min}} till €{{max}}",
+    "sortBy": "Sortera efter:",
+    "sortOptions": {
+      "featured": "Utvalda",
+      "priceLow": "Pris: Lågt till högt",
+      "priceHigh": "Pris: Högt till lågt",
+      "rating": "Högst betyg",
+      "newest": "Nyaste"
+    }
+  },
+  "products": {
+    "productsFound": "{{count}} produkt hittades",
+    "productsFound_other": "{{count}} produkter hittades",
+    "noProductsFound": "Inga produkter hittades",
+    "tryAdjusting": "Prova att justera din sökning eller filter",
+    "inStock": "{{count}} i lager",
+    "lowStock": "Endast {{count}} kvar i lager",
+    "outOfStock": "Slutsåld",
+    "addToCart": "Varukorg",
+    "buyNow": "Köp nu",
+    "processing": "Bearbetar...",
+    "unavailable": "Ej tillgänglig",
+    "sale": "Rea"
+  },
+  "cart": {
+    "title": "Varukorg",
+    "empty": "Din varukorg är tom",
+    "emptyDescription": "Lägg till några vackra produkter för att komma igång!",
+    "each": "st",
+    "remove": "Ta bort",
+    "total": "Totalt:",
+    "proceedToCheckout": "Gå till kassan",
+    "clearCart": "Töm varukorg",
+    "freeShipping": "Fri frakt på beställningar över €5"
+  },
+  "booking": {
+    "title": "Boka din tid",
+    "subtitle": "Professionella hårtjänster på Beloved Beauty & Hair Studio",
+    "readyToBook": "Redo att boka?",
+    "description": "Professionella flätnings-, styling- och hårvårdstjänster. En €10 bokningsavgift krävs för att säkra din tid och kommer att dras av från din slutliga räkning.",
+    "bookNow": "Boka nu",
+    "termsAndConditions": "Villkor",
+    "termsDescription": "Läs och acceptera våra villkor innan du fortsätter",
+    "mediaConsent": "Mediasamtycke",
+    "termsAccepted": "Villkor accepterade",
+    "thankYou": "Tack för att du accepterat våra villkor. För att säkra din tid, betala €10 bokningsavgiften. Detta belopp kommer att dras av från din slutliga räkning.",
+    "bookingDeposit": "Bokningsavgift:",
+    "depositFeatures": {
+      "appliedToBill": "Dras av från slutlig räkning",
+      "securesSlot": "Säkrar din tidsplats",
+      "nonRefundable": "Återbetalas ej vid avbokning < 48h"
+    },
+    "payBookingDeposit": "Betala bokningsavgift",
+    "securePayment": "Säker betalning via Stripe",
+    "back": "Tillbaka",
+    "acceptTerms": "Acceptera villkor & fortsätt",
+    "iHaveRead": "Jag har läst och godkänner villkoren",
+    "selectConsent": "Välj dina mediasamtyckesalternativ ovan för att fortsätta.",
+    "includesMinor": "Denna tid inkluderar ett barn/minderårig (under 18)"
+  },
+  "success": {
+    "paymentSuccessful": "Betalning lyckades!",
+    "thankYou": "Tack för ditt köp. Din beställning har bekräftats och kommer att behandlas inom kort.",
+    "orderSummary": "Beställningssammanfattning",
+    "orderNumber": "Beställningsnummer:",
+    "paymentStatus": "Betalningsstatus:",
+    "estimatedDelivery": "Beräknad leverans:",
+    "itemsPurchased": "Köpta artiklar",
+    "continueShopping": "Fortsätt handla",
+    "emailConfirmation": "Du kommer att få en e-postbekräftelse inom kort med dina beställningsdetaljer.",
+    "loadingOrder": "Laddar din beställning...",
+    "pleaseWait": "Vänta medan vi hämtar dina köpdetaljer.",
+    "orderNotFound": "Beställning hittades inte",
+    "returnToShop": "Återgå till butiken"
+  },
+  "bookingSuccess": {
+    "paymentSuccessful": "Betalning lyckades!",
+    "depositProcessed": "Din €10 bokningsavgift har behandlats. Du kommer nu att omdirigeras för att slutföra din tidsbokning.",
+    "redirecting": "Omdirigerar till bokningssystem...",
+    "continueToFresha": "Fortsätt till Fresha-bokning"
+  },
+  "footer": {
+    "title": "Beloved Beauty",
+    "description": "Din pålitliga destination för premium skönhetsprodukter",
+    "copyright": "© 2024 Beloved Beauty Demo",
+    "builtFor": "Byggd för kundpresentation"
+  },
+  "search": {
+    "placeholder": "Sök skönhetsprodukter..."
+  }
+}

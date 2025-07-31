@@ -1,5 +1,6 @@
 import React from 'react';
 import { Star, Heart, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useInventory } from '../hooks/useInventory';
@@ -14,6 +15,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation();
   const { addItem } = useCart();
   const [loading, setLoading] = React.useState(false);
   const { getProductStock, isLowStock, isOutOfStock } = useInventory();
@@ -116,20 +118,20 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
         {product.originalPrice && (
           <div className="absolute top-3 left-3 bg-black text-white px-2 py-1 rounded-full text-xs font-medium">
-            Sale
+            {t('products.sale')}
           </div>
         )}
         {outOfStock && (
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
             <span className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-800">
-              Out of Stock
+              {t('products.outOfStock')}
             </span>
           </div>
         )}
         {lowStock && !outOfStock && (
           <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
             <AlertTriangle className="w-3 h-3" />
-            <span>Low Stock</span>
+            <span>{t('products.lowStock', { count: stockInfo.stock })}</span>
           </div>
         )}
       </div>
@@ -162,14 +164,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Stock Information */}
         <div className="mb-3">
           {outOfStock ? (
-            <span className="text-sm text-red-600 font-medium">Out of Stock</span>
+            <span className="text-sm text-red-600 font-medium">{t('products.outOfStock')}</span>
           ) : lowStock ? (
             <span className="text-sm text-orange-600 font-medium">
-              Only {stockInfo.stock} left in stock
+              {t('products.lowStock', { count: stockInfo.stock })}
             </span>
           ) : (
             <span className="text-sm text-green-600 font-medium">
-              {stockInfo.stock} in stock
+              {t('products.inStock', { count: stockInfo.stock })}
             </span>
           )}
         </div>
@@ -197,7 +199,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               }`}
             >
               <ShoppingCart className="w-3 h-3" />
-              <span>Cart</span>
+              <span>{t('products.addToCart')}</span>
             </button>
             <button
               onClick={handleBuyNow}
@@ -214,7 +216,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <ShoppingCart className="w-4 h-4" />
               )}
               <span>
-                {loading ? 'Processing...' : outOfStock ? 'Unavailable' : 'Buy Now'}
+                {loading ? t('products.processing') : outOfStock ? t('products.unavailable') : t('products.buyNow')}
               </span>
             </button>
           </div>

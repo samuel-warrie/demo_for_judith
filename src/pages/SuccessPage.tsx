@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CheckCircle, Package, Home, ShoppingBag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 interface LineItem {
@@ -24,6 +25,7 @@ interface OrderDetails {
 }
 
 export default function SuccessPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
@@ -99,8 +101,8 @@ export default function SuccessPage() {
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading your order...</h2>
-            <p className="text-gray-600">Please wait while we retrieve your purchase details.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('success.loadingOrder')}</h2>
+            <p className="text-gray-600">{t('success.pleaseWait')}</p>
           </div>
         </div>
       </div>
@@ -115,14 +117,14 @@ export default function SuccessPage() {
             <div className="flex justify-center mb-6">
               <Package className="w-16 h-16 text-red-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Order Not Found</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('success.orderNotFound')}</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <a
               href="/"
               className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
             >
               <Home className="w-4 h-4 mr-2" />
-              Return to Shop
+              {t('success.returnToShop')}
             </a>
           </div>
         </div>
@@ -151,30 +153,30 @@ export default function SuccessPage() {
           </div>
           
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Payment Successful!
+            {t('success.paymentSuccessful')}
           </h1>
           
           <p className="text-gray-600 mb-6">
-            Thank you for your purchase. Your order has been confirmed and will be processed shortly.
+            {t('success.thankYou')}
           </p>
 
           {/* Order Summary */}
           <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
               <Package className="w-5 h-5 mr-2" />
-              Order Summary
+              {t('success.orderSummary')}
             </h3>
             <div className="space-y-3 text-sm text-gray-600 mb-4">
               <div className="flex justify-between">
-                <span>Order Number:</span>
+                <span>{t('success.orderNumber')}</span>
                 <span className="font-medium text-gray-900">{orderDetails.orderNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span>Payment Status:</span>
+                <span>{t('success.paymentStatus')}</span>
                 <span className="font-medium text-green-600 capitalize">{orderDetails.paymentStatus}</span>
               </div>
               <div className="flex justify-between">
-                <span>Estimated Delivery:</span>
+                <span>{t('success.estimatedDelivery')}</span>
                 <span className="font-medium text-gray-900">{orderDetails.estimatedDelivery}</span>
               </div>
             </div>
@@ -185,7 +187,7 @@ export default function SuccessPage() {
             <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left">
               <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
                 <ShoppingBag className="w-5 h-5 mr-2" />
-                Items Purchased
+                {t('success.itemsPurchased')}
               </h3>
               <div className="space-y-4">
                 {orderDetails.lineItems.map((item, index) => (
@@ -215,7 +217,7 @@ export default function SuccessPage() {
                 {/* Total */}
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                    <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
                     <span className="text-lg font-bold text-gray-900">
                       {formatPrice(orderDetails.totalAmount, orderDetails.currency)}
                     </span>
@@ -231,12 +233,12 @@ export default function SuccessPage() {
               className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
             >
               <Home className="w-4 h-4 mr-2" />
-              Continue Shopping
+              {t('success.continueShopping')}
             </a>
             
             <div className="text-center">
               <p className="text-xs text-gray-500">
-                You will receive an email confirmation shortly with your order details.
+                {t('success.emailConfirmation')}
               </p>
             </div>
           </div>

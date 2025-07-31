@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ interface CartProps {
 }
 
 export default function Cart({ isOpen, onClose }: CartProps) {
+  const { t } = useTranslation();
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const { user, session } = useAuth();
   const navigate = useNavigate();
@@ -112,7 +114,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Shopping Cart</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('cart.title')}</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -126,8 +128,8 @@ export default function Cart({ isOpen, onClose }: CartProps) {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
-                <p className="text-gray-500">Add some beautiful products to get started!</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t('cart.empty')}</h3>
+                <p className="text-gray-500">{t('cart.emptyDescription')}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -140,7 +142,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
-                      <p className="text-sm text-gray-500">€{item.price.toFixed(2)} each</p>
+                      <p className="text-sm text-gray-500">€{item.price.toFixed(2)} {t('cart.each')}</p>
                       <div className="flex items-center space-x-2 mt-2">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -165,7 +167,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                         onClick={() => removeItem(item.id)}
                         className="text-sm text-red-500 hover:text-red-700 transition-colors mt-1"
                       >
-                        Remove
+                        {t('cart.remove')}
                       </button>
                     </div>
                   </div>
@@ -178,7 +180,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
           {items.length > 0 && (
             <div className="border-t border-gray-200 p-6 space-y-4">
               <div className="flex items-center justify-between text-lg font-semibold text-gray-900">
-                <span>Total:</span>
+                <span>{t('cart.total')}</span>
                 <span>€{totalPrice.toFixed(2)}</span>
               </div>
               
@@ -198,19 +200,19 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                       <span>Processing...</span>
                     </div>
                   ) : (
-                    'Proceed to Checkout'
+                    t('cart.proceedToCheckout')
                   )}
                 </button>
                 <button
                   onClick={clearCart}
                   className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Clear Cart
+                  {t('cart.clearCart')}
                 </button>
               </div>
               
               <p className="text-xs text-gray-500 text-center">
-                Free shipping on orders over €5
+                {t('cart.freeShipping')}
               </p>
             </div>
           )}

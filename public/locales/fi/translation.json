@@ -1,0 +1,121 @@
+{
+  "site": {
+    "title": "Beloved Beauty",
+    "tagline": "Kauneutta joka inspiroi",
+    "description": "Löydä premium kauneustuotteita jokapäiväiseen hehkuusi"
+  },
+  "navigation": {
+    "shop": "Kauppa",
+    "bookAppointment": "Varaa aika",
+    "wishlist": "Toivelista",
+    "cart": "Ostoskori"
+  },
+  "hero": {
+    "title": "Kauneutta joka inspiroi",
+    "subtitle": "Löydä premium kauneustuotteita jokapäiväiseen hehkuusi",
+    "features": {
+      "freeShipping": "Ilmainen toimitus yli 5€",
+      "returns": "30 päivän palautusoikeus",
+      "expertApproved": "Asiantuntijan hyväksymä"
+    }
+  },
+  "categories": {
+    "allProducts": "Kaikki tuotteet",
+    "skincare": "Ihonhoito",
+    "makeup": "Meikki"
+  },
+  "filters": {
+    "priceRange": "Hintahaarukka",
+    "min": "Min",
+    "max": "Max",
+    "showingProducts": "Näytetään tuotteet {{min}}€ - {{max}}€",
+    "sortBy": "Järjestä:",
+    "sortOptions": {
+      "featured": "Suositellut",
+      "priceLow": "Hinta: Matalasta korkeaan",
+      "priceHigh": "Hinta: Korkeasta matalaan",
+      "rating": "Parhaiten arvosteltu",
+      "newest": "Uusimmat"
+    }
+  },
+  "products": {
+    "productsFound": "{{count}} tuote löytyi",
+    "productsFound_other": "{{count}} tuotetta löytyi",
+    "noProductsFound": "Tuotteita ei löytynyt",
+    "tryAdjusting": "Kokeile muuttaa hakua tai suodattimia",
+    "inStock": "{{count}} varastossa",
+    "lowStock": "Vain {{count}} jäljellä",
+    "outOfStock": "Loppuunmyyty",
+    "addToCart": "Koriin",
+    "buyNow": "Osta nyt",
+    "processing": "Käsitellään...",
+    "unavailable": "Ei saatavilla",
+    "sale": "Ale"
+  },
+  "cart": {
+    "title": "Ostoskori",
+    "empty": "Ostoskorisi on tyhjä",
+    "emptyDescription": "Lisää kauniita tuotteita aloittaaksesi!",
+    "each": "kpl",
+    "remove": "Poista",
+    "total": "Yhteensä:",
+    "proceedToCheckout": "Siirry kassalle",
+    "clearCart": "Tyhjennä kori",
+    "freeShipping": "Ilmainen toimitus yli 5€ tilauksiin"
+  },
+  "booking": {
+    "title": "Varaa aikasi",
+    "subtitle": "Ammattitaitoisia hiuspalveluita Beloved Beauty & Hair Studiossa",
+    "readyToBook": "Valmis varaamaan?",
+    "description": "Ammattitaitoisia letitys-, muotoilu- ja hiustenhoitopalveluita. 10€ varausmaksu vaaditaan ajan varmistamiseksi ja se vähennetään lopullisesta laskustasi.",
+    "bookNow": "Varaa nyt",
+    "termsAndConditions": "Käyttöehdot",
+    "termsDescription": "Lue ja hyväksy ehtomme ennen jatkamista",
+    "mediaConsent": "Mediasuostumus",
+    "termsAccepted": "Ehdot hyväksytty",
+    "thankYou": "Kiitos ehtojen hyväksymisestä. Varmistaaksesi aikasi, maksa 10€ varausmaksu. Tämä summa vähennetään lopullisesta laskustasi.",
+    "bookingDeposit": "Varausmaksu:",
+    "depositFeatures": {
+      "appliedToBill": "Vähennetään lopullisesta laskusta",
+      "securesSlot": "Varmistaa aikapaikkasi",
+      "nonRefundable": "Ei palauteta jos peruutat < 48h"
+    },
+    "payBookingDeposit": "Maksa varausmaksu",
+    "securePayment": "Turvallinen maksu Stripen kautta",
+    "back": "Takaisin",
+    "acceptTerms": "Hyväksy ehdot & jatka",
+    "iHaveRead": "Olen lukenut ja hyväksyn käyttöehdot",
+    "selectConsent": "Valitse mediasuostumuksesi yllä jatkaaksesi.",
+    "includesMinor": "Tämä aika sisältää lapsen/alaikäisen (alle 18v)"
+  },
+  "success": {
+    "paymentSuccessful": "Maksu onnistui!",
+    "thankYou": "Kiitos ostoksestasi. Tilauksesi on vahvistettu ja se käsitellään pian.",
+    "orderSummary": "Tilausyhteenveto",
+    "orderNumber": "Tilausnumero:",
+    "paymentStatus": "Maksun tila:",
+    "estimatedDelivery": "Arvioitu toimitus:",
+    "itemsPurchased": "Ostetut tuotteet",
+    "continueShopping": "Jatka ostoksia",
+    "emailConfirmation": "Saat sähköpostivahvistuksen pian tilauksen tiedoilla.",
+    "loadingOrder": "Ladataan tilaustasi...",
+    "pleaseWait": "Odota hetki kun haemme ostotietojasi.",
+    "orderNotFound": "Tilausta ei löytynyt",
+    "returnToShop": "Palaa kauppaan"
+  },
+  "bookingSuccess": {
+    "paymentSuccessful": "Maksu onnistui!",
+    "depositProcessed": "10€ varausmaksusi on käsitelty. Sinut ohjataan nyt viimeistelemään ajanvarauksesi.",
+    "redirecting": "Ohjataan varausjärjestelmään...",
+    "continueToFresha": "Jatka Fresha-varaukseen"
+  },
+  "footer": {
+    "title": "Beloved Beauty",
+    "description": "Luotettava kohteesi premium kauneustuotteille",
+    "copyright": "© 2024 Beloved Beauty Demo",
+    "builtFor": "Rakennettu asiakasesittelyä varten"
+  },
+  "search": {
+    "placeholder": "Etsi kauneustuotteita..."
+  }
+}
