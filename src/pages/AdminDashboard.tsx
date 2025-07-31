@@ -64,6 +64,8 @@ export default function AdminDashboard() {
       }
 
       try {
+        console.log('🔍 Admin dashboard - checking authorization for:', user.email);
+        
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
@@ -71,20 +73,50 @@ export default function AdminDashboard() {
           .maybeSingle();
 
         if (error || !profile) {
-          console.error('Error fetching user profile:', error);
+          console.error('❌ Profile not found in admin dashboard:', error);
+          console.log('🔧 Attempting to create profile...');
+          
+          // Try to create profile
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              role: 'user'
+            })
+            .select('*')
+            .single();
+            
+          if (createError) {
+            console.error('❌ Failed to create profile:', createError);
+            navigate('/');
+            return;
+          }
+          
+          setUserProfile(newProfile);
+          
+          if (newProfile.role !== 'admin') {
+            alert('Access denied. Admin privileges required. Please contact support to upgrade your account.');
+            navigate('/');
+            return;
+          }
+        } else {
+          console.log('✅ Profile found:', profile);
+          setUserProfile(profile);
+          
+          if (profile.role !== 'admin') {
+            alert('Access denied. Admin privileges required. Please contact support to upgrade your account.');
+            navigate('/');
+            return;
+          }
+        }
           navigate('/');
           return;
         }
 
-        setUserProfile(profile);
-        
-        if (profile.role !== 'admin') {
-          alert('Access denied. Admin privileges required.');
-          navigate('/');
-          return;
-        }
 
         setIsAuthorized(true);
+        console.log('✅ Admin access granted');
       } catch (err) {
         console.error('Authorization check failed:', err);
         navigate('/');

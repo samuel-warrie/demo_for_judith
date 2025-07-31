@@ -21,6 +21,9 @@ export default function AdminRoute({ children }: AdminRouteProps) {
       }
 
       try {
+        console.log('🔍 Checking admin status for user:', user.id);
+        console.log('👤 User email:', user.email);
+        
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('role')
@@ -28,13 +31,31 @@ export default function AdminRoute({ children }: AdminRouteProps) {
           .maybeSingle();
 
         if (error || !profile) {
-          if (error) {
-            console.error('Error fetching user profile:', error);
+          console.error('❌ Profile not found or error:', error);
+          console.log('🔧 Creating profile for user...');
+          
+          // Try to create a profile for this user
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              role: 'user'
+            })
+            .select('role')
+            .single();
+            
+          if (createError) {
+            console.error('❌ Failed to create profile:', createError);
+            setIsAdmin(false);
           } else {
-            console.warn('User profile not found for user ID:', user.id);
+            console.log('✅ Profile created successfully:', newProfile);
+            setIsAdmin(newProfile.role === 'admin');
           }
           setIsAdmin(false);
         } else {
+          console.log('✅ Profile found:', profile);
+          console.log('👑 User role:', profile.role);
           setIsAdmin(profile.role === 'admin');
         }
       } catch (err) {
