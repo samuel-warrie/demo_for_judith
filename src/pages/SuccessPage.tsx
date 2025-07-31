@@ -48,16 +48,17 @@ export default function SuccessPage() {
           .from('stripe_orders')
           .select('*')
           .eq('checkout_session_id', sessionId)
-          .single();
+          .maybeSingle();
 
         if (orderError) {
           console.error('Error fetching order:', orderError);
-          // If order not found, it might still be processing
-          if (orderError.code === 'PGRST116') {
-            setError('Order is still being processed. Please check back in a moment.');
-          } else {
-            setError('Failed to load order details');
-          }
+          setError('Failed to load order details');
+          setLoading(false);
+          return;
+        }
+
+        if (!orderData) {
+          setError('Order is still being processed. Please check back in a moment.');
           setLoading(false);
           return;
         }
