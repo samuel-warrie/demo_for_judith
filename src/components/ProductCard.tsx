@@ -20,17 +20,20 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   
-  const lowStock = product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
-  const outOfStock = product.stock_quantity === 0;
+  const lowStock = false; // Simplified since we're using in_stock boolean
+  const outOfStock = !product.in_stock;
   
   // Get description in current language with fallback to English
   const getDescription = () => {
-    if (!product.descriptions) {
-      return '';
+    // First try the descriptions JSONB field
+    if (product.descriptions) {
+      const baseLang = i18n.language.split('-')[0] as keyof typeof product.descriptions;
+      const currentLang = baseLang;
+      return product.descriptions[currentLang] || product.descriptions.en || '';
     }
-    const baseLang = i18n.language.split('-')[0] as keyof typeof product.descriptions;
-    const currentLang = baseLang;
-    return product.descriptions[currentLang] || product.descriptions.en || '';
+    
+    // Fallback to the simple description text field
+    return product.description || '';
   };
 
   const handleAddToCart = () => {
