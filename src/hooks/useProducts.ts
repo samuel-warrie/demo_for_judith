@@ -150,9 +150,9 @@ export function useProducts() {
           if (status === 'SUBSCRIBED') {
             console.log('✅ Successfully subscribed to products real-time updates');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Real-time subscription error - check if Realtime is enabled in Supabase');
+            console.warn('⚠️ Real-time subscription error - Realtime may not be enabled for products table in Supabase. The app will still work but won\'t show live updates.');
           } else if (status === 'TIMED_OUT') {
-            console.error('❌ Real-time subscription timed out');
+            console.warn('⚠️ Real-time subscription timed out - continuing without live updates');
           } else if (status === 'CLOSED') {
             console.log('🔌 Real-time subscription closed');
           }
