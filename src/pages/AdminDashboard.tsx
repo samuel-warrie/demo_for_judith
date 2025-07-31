@@ -68,7 +68,7 @@ export default function AdminDashboard() {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error || !profile) {
           console.error('Error fetching user profile:', error);

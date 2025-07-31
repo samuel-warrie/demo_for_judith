@@ -25,7 +25,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error || !profile) {
           console.error('Error fetching user profile:', error);
