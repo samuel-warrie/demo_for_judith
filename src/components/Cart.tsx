@@ -135,7 +135,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 bg-gray-50 rounded-xl p-4">
                     <img
-                      src={item.image}
+                      src={item.image_url}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
