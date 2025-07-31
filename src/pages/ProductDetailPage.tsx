@@ -196,10 +196,6 @@ export default function ProductDetailPage() {
                 src={product.image_url}
                 alt={product.name}
                 className="w-full h-96 lg:h-full object-cover rounded-2xl"
-                onError={(e) => {
-                  console.error('Image failed to load:', product.image_url);
-                  e.currentTarget.src = '/placeholder-image.jpg'; // Fallback image
-                }}
               />
             ) : (
               <div className="w-full h-96 lg:h-full bg-gray-200 rounded-2xl flex items-center justify-center">

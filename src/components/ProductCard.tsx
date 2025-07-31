@@ -126,11 +126,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img
             src={product.image_url}
             alt={product.name}
-            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-            onLoad={() => console.log('✅ Image loaded successfully:', product.image_url)}
-            onError={(e) => {
-              console.error('❌ Image failed to load:', product.image_url);
-            }}
           />
         </Link>
         <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white">
