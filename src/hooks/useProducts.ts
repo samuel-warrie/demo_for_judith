@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Check if Supabase is properly configured
 const isSupabaseConfigured = () => {
@@ -99,6 +100,61 @@ export function useProducts() {
 
   useEffect(() => {
     fetchProducts();
+
+    // Set up real-time subscription for products table
+    let channel: RealtimeChannel | null = null;
+
+    if (isSupabaseConfigured()) {
+      channel = supabase
+        .channel('products-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'products'
+          },
+          (payload) => {
+            console.log('Real-time product change detected:', payload);
+            
+            switch (payload.eventType) {
+              case 'INSERT':
+                console.log('New product added:', payload.new);
+                setProducts(prev => [...prev, payload.new as Product]);
+                break;
+                
+              case 'UPDATE':
+                console.log('Product updated:', payload.new);
+                setProducts(prev => 
+                  prev.map(product => 
+                    product.id === payload.new.id 
+                      ? { ...product, ...payload.new } as Product
+                      : product
+                  )
+                );
+                break;
+                
+              case 'DELETE':
+                console.log('Product deleted:', payload.old);
+                setProducts(prev => 
+                  prev.filter(product => product.id !== payload.old.id)
+                );
+                break;
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log('Products real-time subscription status:', status);
+        });
+    }
+
+    // Cleanup function
+    return () => {
+      if (channel) {
+        console.log('Unsubscribing from products real-time channel');
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   return {
