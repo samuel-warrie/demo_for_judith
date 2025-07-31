@@ -28,7 +28,11 @@ export default function AdminRoute({ children }: AdminRouteProps) {
           .maybeSingle();
 
         if (error || !profile) {
-          console.error('Error fetching user profile:', error);
+          if (error) {
+            console.error('Error fetching user profile:', error);
+          } else {
+            console.warn('User profile not found for user ID:', user.id);
+          }
           setIsAdmin(false);
         } else {
           setIsAdmin(profile.role === 'admin');
