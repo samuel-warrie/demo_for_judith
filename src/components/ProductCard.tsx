@@ -127,12 +127,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={product.image_url}
             alt={product.name}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-            onLoad={() => console.log('Image loaded successfully:', product.image_url)}
+            onLoad={() => console.log('✅ Image loaded successfully:', product.image_url)}
             onError={(e) => {
-              console.error('Image failed to load:', product.image_url);
-              console.error('Image error event:', e);
-              // Set fallback image when original fails to load
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop&crop=center';
+              console.error('❌ Image failed to load:', product.image_url);
+              console.error('❌ Error details:', e.nativeEvent);
+              console.error('❌ Image element:', e.currentTarget);
             }}
           />
         </Link>
