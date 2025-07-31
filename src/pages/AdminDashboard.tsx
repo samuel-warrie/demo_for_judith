@@ -110,10 +110,6 @@ export default function AdminDashboard() {
             return;
           }
         }
-          navigate('/');
-          return;
-        }
-
 
         setIsAuthorized(true);
         console.log('✅ Admin access granted');
