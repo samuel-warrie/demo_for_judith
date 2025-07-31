@@ -50,6 +50,12 @@ export default function ProductDetailPage() {
           return;
         }
 
+        // Debug logging to check what data we're getting
+        console.log('Fetched product data:', data);
+        console.log('Image URL:', data.image_url);
+        console.log('Stock quantity:', data.stock_quantity);
+        console.log('Descriptions:', data.descriptions);
+
         setProduct(data);
       } catch (err) {
         console.error('Error fetching product:', err);
@@ -81,17 +87,36 @@ export default function ProductDetailPage() {
     );
   }
 
-  const lowStock = product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
-  const outOfStock = product.stock_quantity === 0;
+  // Safe stock calculations with proper fallbacks
+  const stockQuantity = product.stock_quantity ?? 0;
+  const lowStockThreshold = product.low_stock_threshold ?? 5;
+  const lowStock = stockQuantity > 0 && stockQuantity <= lowStockThreshold;
+  const outOfStock = stockQuantity === 0;
 
   // Get description in current language with fallback to English
   const getDescription = () => {
     if (!product.descriptions) {
-      return '';
+      return 'No description available';
     }
-    const baseLang = i18n.language.split('-')[0] as keyof typeof product.descriptions;
-    const currentLang = baseLang;
-    return product.descriptions[currentLang] || product.descriptions.en || '';
+    
+    // Handle both object and string descriptions
+    if (typeof product.descriptions === 'string') {
+      return product.descriptions;
+    }
+    
+    if (typeof product.descriptions === 'object') {
+      const currentLang = i18n.language.split('-')[0];
+      const descriptions = product.descriptions as Record<string, string>;
+      
+      // Try current language first, then English, then any available language
+      return descriptions[currentLang] || 
+             descriptions.en || 
+             descriptions.english ||
+             Object.values(descriptions)[0] || 
+             'No description available';
+    }
+    
+    return 'No description available';
   };
 
   const handleAddToCart = () => {
@@ -166,12 +191,26 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Image */}
           <div className="relative">
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="w-full h-96 lg:h-full object-cover rounded-2xl"
-            />
-            {product.originalPrice && (
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-96 lg:h-full object-cover rounded-2xl"
+                onError={(e) => {
+                  console.error('Image failed to load:', product.image_url);
+                  e.currentTarget.src = '/placeholder-image.jpg'; // Fallback image
+                }}
+              />
+            ) : (
+              <div className="w-full h-96 lg:h-full bg-gray-200 rounded-2xl flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <Package className="w-16 h-16 mx-auto mb-2" />
+                  <p>No image available</p>
+                </div>
+              </div>
+            )}
+            
+            {product.original_price && product.original_price > product.price && (
               <div className="absolute top-4 left-4 bg-black text-white px-3 py-1 rounded-full text-sm font-medium">
                 {t('products.sale')}
               </div>
@@ -197,24 +236,24 @@ export default function ProductDetailPage() {
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i < Math.floor(product.rating)
+                        i < Math.floor(product.rating || 0)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-gray-600">({product.review_count} reviews)</span>
+                <span className="text-gray-600">({product.review_count || 0} reviews)</span>
               </div>
 
               {/* Price */}
               <div className="flex items-center space-x-3 mb-6">
                 <span className="text-3xl font-bold text-gray-900">
-                  €{product.price.toFixed(2)}
+                  €{(product.price || 0).toFixed(2)}
                 </span>
-                {product.originalPrice && (
+                {product.original_price && product.original_price > product.price && (
                   <span className="text-xl text-gray-500 line-through">
-                    €{product.originalPrice.toFixed(2)}
+                    €{product.original_price.toFixed(2)}
                   </span>
                 )}
               </div>
@@ -230,17 +269,27 @@ export default function ProductDetailPage() {
                   <div className="flex items-center space-x-2 text-orange-600">
                     <AlertTriangle className="w-5 h-5" />
                     <span className="font-medium">
-                      {t('products.lowStock', { count: product.stock_quantity })}
+                      {t('products.lowStock', { count: stockQuantity })}
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2 text-green-600">
                     <Package className="w-5 h-5" />
                     <span className="font-medium">
-                      {t('products.inStock', { count: product.stock_quantity })}
+                      {t('products.inStock', { count: stockQuantity })}
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Debug Info (remove in production) */}
+              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                <h4 className="font-semibold text-yellow-800 mb-2">Debug Info:</h4>
+                <p><strong>Image URL:</strong> {product.image_url || 'Not set'}</p>
+                <p><strong>Stock:</strong> {stockQuantity}</p>
+                <p><strong>Low Stock Threshold:</strong> {lowStockThreshold}</p>
+                <p><strong>Descriptions:</strong> {JSON.stringify(product.descriptions)}</p>
+                <p><strong>Current Language:</strong> {i18n.language}</p>
               </div>
 
               {/* Description */}
@@ -264,7 +313,7 @@ export default function ProductDetailPage() {
                     </button>
                     <span className="text-lg font-medium w-12 text-center">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                      onClick={() => setQuantity(Math.min(stockQuantity, quantity + 1))}
                       className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <span className="w-4 h-4 flex items-center justify-center">+</span>
@@ -292,7 +341,7 @@ export default function ProductDetailPage() {
                   ) : outOfStock ? (
                     t('products.unavailable')
                   ) : (
-                    `${t('products.buyNow')} - €${(product.price * quantity).toFixed(2)}`
+                    `${t('products.buyNow')} - €${((product.price || 0) * quantity).toFixed(2)}`
                   )}
                 </button>
 
