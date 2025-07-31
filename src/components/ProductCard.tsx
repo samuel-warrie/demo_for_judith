@@ -132,6 +132,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               console.error('❌ Image failed to load:', product.image_url);
               console.error('❌ Error details:', e.nativeEvent);
               console.error('❌ Image element:', e.currentTarget);
+              // Set fallback image when original fails to load
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop&crop=center';
             }}
           />
         </Link>
