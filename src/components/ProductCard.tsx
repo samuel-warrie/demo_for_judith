@@ -131,7 +131,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             onError={(e) => {
               console.error('Image failed to load:', product.image_url);
               console.error('Image error event:', e);
-              e.currentTarget.src = '/placeholder-image.jpg';
             }}
           />
         </Link>
