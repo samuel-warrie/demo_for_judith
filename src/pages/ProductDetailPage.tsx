@@ -265,18 +265,11 @@ export default function ProductDetailPage() {
                     <AlertTriangle className="w-5 h-5" />
                     <span className="font-medium">{t('products.outOfStock')}</span>
                   </div>
-                ) : lowStock ? (
-                  <div className="flex items-center space-x-2 text-orange-600">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span className="font-medium">
-                      {t('products.lowStock', { count: stockQuantity })}
-                    </span>
-                  </div>
                 ) : (
                   <div className="flex items-center space-x-2 text-green-600">
                     <Package className="w-5 h-5" />
                     <span className="font-medium">
-                      {t('products.inStock', { count: stockQuantity })}
+                      In Stock
                     </span>
                   </div>
                 )}

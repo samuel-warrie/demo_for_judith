@@ -193,9 +193,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-lg font-bold text-gray-900">
               €{product.price.toFixed(2)}
             </span>
-            {product.originalPrice && (
+            {product.original_price && (
               <span className="text-sm text-gray-500 line-through">
-                €{product.originalPrice.toFixed(2)}
+                €{product.original_price.toFixed(2)}
               </span>
             )}
           </div>
