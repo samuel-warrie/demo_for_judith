@@ -88,7 +88,7 @@ export function useProducts() {
     if (isSupabaseConfigured()) {
       console.log('Setting up real-time subscription for products...');
       
-      const subscription = supabase
+      const channel = supabase
         .channel('products-changes')
         .on(
           'postgres_changes',
@@ -102,52 +102,6 @@ export function useProducts() {
             
             // Refetch all products to ensure consistency
             fetchProducts();
-          }
-        )
-        .subscribe((status) => {
-          console.log('Real-time subscription status:', status);
-          
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Real-time updates enabled for products');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time channel error - check if Realtime is enabled for products table');
-          } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ Real-time connection timed out');
-          } else if (status === 'CLOSED') {
-            console.warn('⚠️ Real-time connection closed');
-          }
-        });
-
-      // Cleanup function
-      return () => {
-        console.log('Cleaning up real-time subscription');
-        supabase.removeChannel(subscription);
-      };
-    } else {
-      console.warn('Supabase not configured - real-time updates disabled');
-    }
-  }, []);
-
-  // Add a manual refresh function for testing
-  const refreshProducts = () => {
-    console.log('Manual refresh triggered');
-    fetchProducts();
-  };
-
-  return {
-    products,
-    loading,
-    error,
-    fetchProducts,
-    refreshProducts,
-    updateProductStock,
-    getProductsByCategory,
-    getProductById,
-    isLowStock,
-    isOutOfStock,
-  };
-}
-            }
             
             // Force a re-render by updating a timestamp
             console.log('🔄 Forcing component re-render...');
