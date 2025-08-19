@@ -189,7 +189,7 @@ export function useProducts() {
               setProducts(prev => 
                 prev.map(product => 
                   product.id === payload.new.id 
-                    ? { ...product, ...payload.new } as Product
+                    ? payload.new as Product
                     : product
                 )
               );

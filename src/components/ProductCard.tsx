@@ -22,11 +22,6 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // Debug logging
   console.log('ProductCard rendering with product:', product);
-  console.log('Product image_url:', product.image_url);
-  console.log('Product name:', product.name);
-  console.log('Product price:', product.price);
-  console.log('Product stock_quantity:', product.stock_quantity);
-  console.log('Product in_stock:', product.in_stock);
   
   // Proper stock calculations
   const stockQuantity = product.stock_quantity ?? 0;
