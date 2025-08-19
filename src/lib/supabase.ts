@@ -22,7 +22,31 @@ if (!supabaseUrl || !supabaseAnonKey) {
       autoRefreshToken: true,
       detectSessionInUrl: true,
       storage: localStorage
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+    // Add global options for better debugging
+    global: {
+      headers: {
+        'X-Client-Info': 'supabase-js-web'
+      }
     }
+  });
+  
+  // Add connection status logging
+  supabase.realtime.onOpen(() => {
+    console.log('✅ Supabase real-time connection opened');
+  });
+  
+  supabase.realtime.onClose(() => {
+    console.log('🔒 Supabase real-time connection closed');
+  });
+  
+  supabase.realtime.onError((error) => {
+    console.error('❌ Supabase real-time error:', error);
   });
 }
 
