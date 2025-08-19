@@ -75,14 +75,22 @@ function AdminSignIn() {
         
         const { error } = await signUp(formData.email, formData.password);
         if (error) {
-          alert(error.message);
+          if (error.message.includes('email_not_confirmed')) {
+            alert('Account created! Please check your email and click the confirmation link to complete setup.');
+          } else {
+            alert(error.message);
+          }
         } else {
-          alert('Admin account created successfully!');
+          alert('Account created! Please check your email and click the confirmation link to complete setup.');
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          alert(error.message);
+          if (error.message.includes('email_not_confirmed')) {
+            alert('Please check your email and click the confirmation link to verify your account before signing in.');
+          } else {
+            alert(error.message);
+          }
         }
       }
     } catch (err) {
