@@ -33,7 +33,6 @@ export default function Cart({ isOpen, onClose }: CartProps) {
     }
 
     // Check for out-of-stock items before proceeding
-    const { getProductById } = useProducts();
     const outOfStockItems = [];
     const availableItems = [];
 
