@@ -21,19 +21,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storage: localStorage,
-      flowType: 'pkce'
+      storage: localStorage
     },
     realtime: {
       params: {
-        eventsPerSecond: 10,
+        eventsPerSecond: 50,
       },
-      heartbeatIntervalMs: 15000,
-      reconnectAfterMs: (tries) => Math.min(tries * 2000, 10000),
+      heartbeatIntervalMs: 30000,
+      reconnectAfterMs: (tries) => Math.min(tries * 1000, 30000),
     },
     global: {
       headers: {
         'X-Client-Info': 'supabase-js-web',
+        'X-Realtime-Debug': 'true'
       }
     }
   });

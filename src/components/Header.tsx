@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
+import LoginForm from './LoginForm';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -16,10 +17,11 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
-  const { refreshProducts } = useWebSocketProducts();
+  const { refreshProducts, connected } = useWebSocketProducts();
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -64,6 +66,14 @@ export default function Header({ onSearchChange }: HeaderProps) {
                 >
                   {t('navigation.bookAppointment')}
                 </Link>
+                {user?.email?.includes('admin') && (
+                  <Link 
+                    to="/admin" 
+                    className="text-gray-600 hover:text-black transition-colors"
+                  >
+                    Admin
+                  </Link>
+                )}
               </nav>
             </div>
 
@@ -88,10 +98,11 @@ export default function Header({ onSearchChange }: HeaderProps) {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className={`p-2 transition-colors text-gray-600 hover:text-black ${
-                  refreshing ? 'animate-spin' : ''
+                className={`p-2 transition-colors ${
+                  connected ? 'text-green-600 hover:text-green-700' : 'text-gray-600 hover:text-black'
+                } ${refreshing ? 'animate-spin' : ''
                 }`}
-                title="Refresh products"
+                title={connected ? 'Real-time connected' : 'Refresh products'}
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
@@ -120,7 +131,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
                 </div>
               ) : (
                 <button
-                  onClick={() => {}}
+                  onClick={() => setShowLogin(true)}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-black transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -202,6 +213,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
       </header>
 
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
     </>
   );
 }

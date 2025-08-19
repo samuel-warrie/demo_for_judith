@@ -20,15 +20,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { user, session } = useAuth();
   const navigate = useNavigate();
 
-  // Add debugging to see when product props change
-  React.useEffect(() => {
-    console.log('🃏 ProductCard updated for:', product.name, {
-      stock: product.stock_quantity,
-      inStock: product.in_stock,
-      timestamp: new Date().toLocaleTimeString()
-    });
-  }, [product.stock_quantity, product.in_stock, product.name]);
-
   // Proper stock calculations
   const stockQuantity = product.stock_quantity ?? 0;
   const lowStockThreshold = product.low_stock_threshold ?? 5;
