@@ -101,6 +101,49 @@ export function useProducts() {
   useEffect(() => {
     fetchProducts();
 
+    // Set up real-time subscription for product changes
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    const channel = supabase
+      .channel('products-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('Real-time product change:', payload);
+          
+          switch (payload.eventType) {
+            case 'INSERT':
+              setProducts(prev => [...prev, payload.new as Product]);
+              break;
+            case 'UPDATE':
+              setProducts(prev => 
+                prev.map(product => 
+                  product.id === payload.new.id 
+                    ? { ...product, ...payload.new } as Product
+                    : product
+                )
+              );
+              break;
+            case 'DELETE':
+              setProducts(prev => 
+                prev.filter(product => product.id !== payload.old.id)
+              );
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Set up real-time subscription in a separate useEffect
