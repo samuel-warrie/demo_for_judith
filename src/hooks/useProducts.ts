@@ -109,6 +109,11 @@ export function useProducts() {
       return;
     }
 
+    if (loading) {
+      console.log('⏳ Still loading products, waiting to set up real-time...');
+      return;
+    }
+
     console.log('🔄 Setting up real-time subscription...');
     console.log('📊 Current products count:', products.length);
     
@@ -133,20 +138,22 @@ export function useProducts() {
             case 'INSERT':
               console.log('➕ Adding new product to state');
               setProducts(prev => {
-                const newProducts = [...prev, payload.new as Product];
+                const updated = [...prev, payload.new as Product];
                 console.log('📈 Products count after INSERT:', newProducts.length);
-                return newProducts;
+                return updated;
               });
               break;
               
             case 'UPDATE':
               console.log('✏️ Updating product in state, ID:', payload.new.id);
               setProducts(prev => 
-                prev.map(product => 
-                  product.id === payload.new.id 
-                    ? { ...payload.new as Product }
-                    : product
-                )
+                prev.map(product => {
+                  if (product.id === payload.new.id) {
+                    console.log('🔄 Updating product:', product.name, 'stock:', product.stock_quantity, '→', payload.new.stock_quantity);
+                    return { ...payload.new as Product };
+                  }
+                  return product;
+                })
               );
               console.log('✅ Product updated in state');
               break;
@@ -154,9 +161,9 @@ export function useProducts() {
             case 'DELETE':
               console.log('🗑️ Removing product from state');
               setProducts(prev => {
-                const newProducts = prev.filter(product => product.id !== payload.old.id);
+                const updated = prev.filter(product => product.id !== payload.old.id);
                 console.log('📉 Products count after DELETE:', newProducts.length);
-                return newProducts;
+                return updated;
               });
               break;
           }
@@ -180,7 +187,7 @@ export function useProducts() {
       console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }
+  }, [loading, products.length]);
   )
 
   return {
