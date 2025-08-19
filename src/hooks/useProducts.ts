@@ -115,7 +115,6 @@ export function useProducts() {
             console.warn('⚠️ Real-time connection closed - updates may not work automatically');
           }
         });
-  }, []);
 
       // Cleanup subscription on unmount
       return () => {
@@ -125,6 +124,8 @@ export function useProducts() {
     } else {
       console.log('ℹ️ Real-time updates disabled - Supabase not configured');
     }
+  }, []);
+
   return {
     products,
     loading,
