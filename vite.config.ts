@@ -15,7 +15,7 @@ export default defineConfig({
         style-src 'self' 'unsafe-inline';
         img-src 'self' data: https: blob:;
         font-src 'self' data:;
-        connect-src 'self' https://*.supabase.co https://api.stripe.com wss://*.supabase.co ws://localhost:* http://localhost:*;
+        connect-src 'self' https://*.supabase.co https://api.stripe.com wss://*.supabase.co;
         frame-src https://js.stripe.com https://hooks.stripe.com;
         object-src 'none';
         base-uri 'self';
