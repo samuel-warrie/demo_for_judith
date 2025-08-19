@@ -84,12 +84,19 @@ export function useProducts() {
   useEffect(() => {
     fetchProducts();
     
-    // Set up real-time subscription for automatic updates
+    // Set up real-time subscription for automatic updates with detailed debugging
     if (isSupabaseConfigured()) {
-      console.log('🔄 Setting up real-time subscription for products...');
+      console.log('🔄 Setting up real-time subscription for products table...');
+      console.log('📡 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 Supabase Key present:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
       
       const channel = supabase
-        .channel('public:products')
+        .channel('products-realtime', {
+          config: {
+            broadcast: { self: true },
+            presence: { key: 'products' }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -98,7 +105,10 @@ export function useProducts() {
             table: 'products'
           },
           (payload) => {
-            console.log('📡 Real-time update received:', payload);
+            console.log('📡 REAL-TIME UPDATE RECEIVED:', payload);
+            console.log('📡 Event type:', payload.eventType);
+            console.log('📡 New data:', payload.new);
+            console.log('📡 Old data:', payload.old);
             
             // Handle different types of changes
             if (payload.eventType === 'INSERT') {
@@ -111,35 +121,41 @@ export function useProducts() {
               console.log('🗑️ Product deleted:', payload.old);
               setProducts(prev => prev.filter(p => p.id !== payload.old.id));
             }
+            
+            // Force a re-render by updating a timestamp
+            console.log('🔄 Forcing component re-render...');
           }
         )
         .subscribe((status) => {
-          console.log('📡 Real-time subscription status:', status);
+          console.log('📡 REAL-TIME SUBSCRIPTION STATUS:', status);
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Real-time updates enabled for products');
+            console.log('✅ REAL-TIME UPDATES SUCCESSFULLY ENABLED FOR PRODUCTS TABLE');
+            console.log('🎯 Listening for changes on public.products table');
           } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time channel error - falling back to periodic refresh');
-            // Set up periodic refresh as fallback
-            const interval = setInterval(fetchProducts, 30000); // Refresh every 30 seconds
-            return () => clearInterval(interval);
+            console.error('❌ REAL-TIME CHANNEL ERROR');
+            console.log('🔄 Attempting to reconnect...');
           } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ Real-time connection timed out - falling back to periodic refresh');
-            const interval = setInterval(fetchProducts, 30000);
-            return () => clearInterval(interval);
+            console.error('❌ REAL-TIME CONNECTION TIMED OUT');
           } else if (status === 'CLOSED') {
-            console.warn('⚠️ Real-time connection closed - falling back to periodic refresh');
-            const interval = setInterval(fetchProducts, 30000);
-            return () => clearInterval(interval);
+            console.error('❌ REAL-TIME CONNECTION CLOSED');
+          } else {
+            console.log('📡 Real-time status:', status);
           }
         });
 
+      // Test the connection after a short delay
+      setTimeout(() => {
+        console.log('🧪 Testing real-time connection...');
+        console.log('📊 Current channel state:', channel);
+      }, 2000);
+
       // Cleanup subscription on unmount
       return () => {
-        console.log('🧹 Cleaning up real-time subscription');
+        console.log('🧹 CLEANING UP REAL-TIME SUBSCRIPTION');
         supabase.removeChannel(channel);
       };
     } else {
-      console.log('ℹ️ Real-time updates disabled - Supabase not configured');
+      console.error('❌ REAL-TIME UPDATES DISABLED - SUPABASE NOT CONFIGURED');
     }
   }, []);
 
