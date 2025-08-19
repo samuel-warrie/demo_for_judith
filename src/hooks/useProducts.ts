@@ -177,7 +177,7 @@ export function useProducts() {
         } else if (status === 'TIMED_OUT') {
           console.error('⏰ Real-time subscription timed out - check your internet connection');
         } else if (status === 'CLOSED') {
-          console.error('🔒 Real-time subscription closed unexpectedly');
+          console.warn('🔒 Real-time subscription closed unexpectedly');
         } else {
           console.log('📡 Subscription status:', status);
         }
