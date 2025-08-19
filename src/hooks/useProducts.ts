@@ -185,7 +185,6 @@ export function useProducts() {
 
     // Test the connection after a short delay
     setTimeout(() => {
-            console.warn('🚨 Real-time subscription error details:', err);
       console.log('📺 Channel state:', channel.state);
       console.log('🔌 Socket state:', supabase.realtime.channels.length, 'channels active');
     }, 2000);
