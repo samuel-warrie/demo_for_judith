@@ -132,12 +132,12 @@ export function useProducts() {
             console.log('✅ REAL-TIME UPDATES SUCCESSFULLY ENABLED FOR PRODUCTS TABLE');
             console.log('🎯 Listening for changes on public.products table');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ REAL-TIME CHANNEL ERROR');
+            console.warn('⚠️ REAL-TIME CHANNEL ERROR - This is expected if Realtime is not enabled for the products table');
             console.log('🔄 Attempting to reconnect...');
           } else if (status === 'TIMED_OUT') {
-            console.error('❌ REAL-TIME CONNECTION TIMED OUT');
+            console.warn('⚠️ REAL-TIME CONNECTION TIMED OUT - This is expected if Realtime is not enabled');
           } else if (status === 'CLOSED') {
-            console.error('❌ REAL-TIME CONNECTION CLOSED');
+            console.warn('⚠️ REAL-TIME CONNECTION CLOSED - This is expected if Realtime is not enabled');
           } else {
             console.log('📡 Real-time status:', status);
           }
