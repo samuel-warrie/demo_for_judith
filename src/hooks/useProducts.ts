@@ -75,6 +75,14 @@ export function useProducts() {
 
   const isLowStock = (product: Product) => {
     return product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
+  };
+
+  const isOutOfStock = (product: Product) => {
+    return product.stock_quantity === 0;
+  };
+
+  useEffect(() => {
+    fetchProducts();
     // Real-time updates disabled due to WebSocket connection issues
     // To enable: Go to Supabase Dashboard → Database → Replication → Enable products table
     console.log('ℹ️ Real-time updates disabled - refresh page to see database changes');
