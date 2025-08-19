@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import { useProducts } from './hooks/useProducts';
+import { useWebSocketProducts } from './hooks/useWebSocketProducts';
 import { useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
 import LoginForm from './components/LoginForm';
@@ -23,7 +23,7 @@ function HomePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
-  const { products, loading, error, getProductsByCategory, refreshProducts } = useProducts();
+  const { products, loading, error, connected, getProductsByCategory, refreshProducts } = useWebSocketProducts();
 
   if (error) {
     return (
@@ -46,6 +46,9 @@ function HomePage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
   const [sortBy, setSortBy] = useState('featured');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Show connection status for debugging
+  console.log('🔌 Real-time connection status:', connected);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = getProductsByCategory(selectedCategory).filter((product: Product) => {

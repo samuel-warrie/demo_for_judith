@@ -14,7 +14,6 @@ export function useWebSocketProducts() {
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const channelRef = useRef<any>(null);
-  const lastFetchRef = useRef<number>(0);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -24,7 +23,7 @@ export function useWebSocketProducts() {
     }
 
     try {
-      console.log('📡 Fetching products from database...');
+      console.log('📡 Fetching products from database...', new Date().toLocaleTimeString());
       
       const { data, error: fetchError } = await supabase
         .from('products')
@@ -32,25 +31,32 @@ export function useWebSocketProducts() {
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.error('❌ Error fetching products:', fetchError);
+        console.error('Error fetching products:', fetchError);
         setError(`Failed to load products: ${fetchError.message}`);
         setProducts([]);
       } else {
-        console.log(`✅ Fetched ${data?.length || 0} products successfully`);
+        console.log(`✅ Fetched ${data?.length || 0} products from database at`, new Date().toLocaleTimeString());
         setProducts(data || []);
         setError(null);
-        lastFetchRef.current = Date.now();
       }
     } catch (err) {
-      console.error('❌ Unexpected error fetching products:', err);
-      setError('An unexpected error occurred while loading products');
+      console.error('Unexpected error fetching products:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+        setError('Network connection failed. Please check your internet connection and ensure your Supabase project is accessible.');
+      } else if (errorMessage.includes('CORS')) {
+        setError('CORS error: Please add your development server URL to Supabase project settings.');
+      } else {
+        setError(`Error: ${errorMessage}`);
+      }
       setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = async () => {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, skipping real-time setup');
       return;
@@ -60,45 +66,51 @@ export function useWebSocketProducts() {
 
     // Clean up existing subscription
     if (channelRef.current) {
-      console.log('🧹 Unsubscribing from existing channel');
+      console.log('🧹 Removing existing channel');
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
+      setConnected(false);
     }
 
-    // Create new channel
-    const channel = supabase
-      .channel('products-changes')
+    // Create new channel with unique name
+    const channelName = `products-realtime-${Date.now()}`;
+    const channel = supabase.channel(channelName, {
+      config: {
+        broadcast: { self: false },
+        presence: { key: '' }
+      }
+    })
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'products'
+          table: 'products',
+          filter: null
         },
         (payload) => {
-          console.log('🎉 Real-time update received:', payload.eventType, payload);
+          console.log('🎉 Real-time update received:', payload.eventType, payload.new?.name || payload.old?.name);
           
           switch (payload.eventType) {
             case 'INSERT':
-              console.log('➕ Adding new product:', payload.new);
+              console.log('➕ Adding new product:', payload.new?.name);
               setProducts(prev => {
-                // Check if product already exists to avoid duplicates
-                const exists = prev.some(p => p.id === payload.new.id);
+                const exists = prev.some(p => p.id === payload.new?.id);
                 if (exists) return prev;
                 return [payload.new as Product, ...prev];
               });
               break;
               
             case 'UPDATE':
-              console.log('✏️ Updating product:', payload.new);
+              console.log('✏️ Updating product:', payload.new?.name);
               setProducts(prev => 
-                prev.map(p => p.id === payload.new.id ? payload.new as Product : p)
+                prev.map(p => p.id === payload.new?.id ? payload.new as Product : p)
               );
               break;
               
             case 'DELETE':
-              console.log('🗑️ Removing product:', payload.old);
-              setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+              console.log('🗑️ Removing product:', payload.old?.name);
+              setProducts(prev => prev.filter(p => p.id !== payload.old?.id));
               break;
           }
         }
@@ -115,8 +127,13 @@ export function useWebSocketProducts() {
           case 'CHANNEL_ERROR':
           case 'TIMED_OUT':
           case 'CLOSED':
-            console.log('❌ Real-time connection failed:', status);
+            console.log('❌ Real-time connection issue:', status);
             setConnected(false);
+            // Retry connection after 5 seconds
+            setTimeout(() => {
+              console.log('🔄 Retrying real-time connection...');
+              setupRealtimeSubscription();
+            }, 5000);
             break;
             
           default:
@@ -127,9 +144,9 @@ export function useWebSocketProducts() {
     channelRef.current = channel;
   };
 
-  const refreshProducts = async () => {
+  const refreshProducts = () => {
     console.log('🔄 Manual refresh triggered');
-    await fetchProducts();
+    fetchProducts();
   };
 
   const getProductsByCategory = (category: string) => {
@@ -155,20 +172,21 @@ export function useWebSocketProducts() {
     // Initial fetch
     fetchProducts();
     
-    // Setup real-time subscription after initial fetch
-    const timer = setTimeout(() => {
+    // Setup real-time subscription after initial fetch completes
+    const setupTimer = setTimeout(() => {
       setupRealtimeSubscription();
-    }, 1000);
+    }, 2000);
 
     // Cleanup function
     return () => {
       console.log('🧹 Cleaning up WebSocket products hook');
-      clearTimeout(timer);
+      clearTimeout(setupTimer);
       
       if (channelRef.current) {
         console.log('🔌 Unsubscribing from real-time channel');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
+        setConnected(false);
       }
     };
   }, []);

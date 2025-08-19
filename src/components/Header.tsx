@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useProducts } from '../hooks/useProducts';
+import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginForm from './LoginForm';
@@ -17,7 +17,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
-  const { refreshProducts } = useProducts();
+  const { refreshProducts } = useWebSocketProducts();
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
