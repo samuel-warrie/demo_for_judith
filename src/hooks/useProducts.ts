@@ -146,97 +146,67 @@ export function useProducts() {
     };
   }, []);
 
-  // Set up real-time subscription in a separate useEffect
+  // Set up real-time subscription after initial fetch
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      console.log('❌ Supabase not configured - skipping real-time setup');
+    if (!isSupabaseConfigured() || loading) {
       return;
     }
 
     console.log('🔄 Setting up real-time subscription for products table...');
-    console.log('📡 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('🔑 Using anon key (first 20 chars):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 20));
-    
-    // Create a unique channel name to avoid conflicts
-    const channelName = `products-changes-${Date.now()}`;
-    console.log('📺 Creating channel:', channelName);
     
     const channel = supabase
-      .channel(channelName)
+      .channel('products-realtime')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'products',
-          filter: undefined
+          table: 'products'
         },
         (payload) => {
           console.log('🚀 Real-time product change detected:', payload);
-          console.log('📦 Event type:', payload.eventType);
-          console.log('📄 New data:', payload.new);
-          console.log('📄 Old data:', payload.old);
           
           switch (payload.eventType) {
             case 'INSERT':
-              console.log('➕ New product added:', payload.new);
+              console.log('➕ Adding new product to state');
               setProducts(prev => [...prev, payload.new as Product]);
               break;
               
             case 'UPDATE':
-              console.log('✏️ Product updated:', payload.new);
-              console.log('🔄 Updating product in state...');
+              console.log('✏️ Updating product in state');
               setProducts(prev => 
                 prev.map(product => 
                   product.id === payload.new.id 
-                    ? payload.new as Product
+                    ? { ...payload.new } as Product
                     : product
                 )
               );
               break;
               
-            console.log('✅ Successfully subscribed to products real-time updates!');
-              console.log('🗑️ Product deleted:', payload.old);
-            console.warn('❌ Real-time subscription error - Realtime not enabled for products table');
-            console.warn('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
-            console.warn(`🔗 Dashboard URL: https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}`);
+            case 'DELETE':
+              console.log('🗑️ Removing product from state');
+              setProducts(prev => 
+                prev.filter(product => product.id !== payload.old.id)
+              );
               break;
-            console.warn('⏰ Real-time subscription timed out');
-            default:
-            console.warn('🔒 Real-time subscription closed unexpectedly');
           }
         }
       )
       .subscribe((status) => {
-        console.log('📊 Real-time subscription status changed to:', status);
+        console.log('📊 Real-time subscription status:', status);
         
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to products real-time updates!');
-          console.log('🎯 Listening for changes to products table...');
+          console.log('✅ Real-time updates enabled for products');
         } else if (status === 'CHANNEL_ERROR') {
-          console.warn('❌ Real-time subscription error - Realtime not enabled for products table');
-          console.warn('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
-          console.warn('🔗 Dashboard URL: https://supabase.com/dashboard/project/' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]);
-        } else if (status === 'TIMED_OUT') {
-          console.warn('⏰ Real-time subscription timed out - check your internet connection');
-        } else if (status === 'CLOSED') {
-          console.warn('🔒 Real-time subscription closed unexpectedly');
-        } else {
-          console.log('📡 Subscription status:', status);
+          console.warn('❌ Real-time not enabled - enable products table in Supabase Dashboard → Database → Replication');
         }
       });
 
-    // Test the connection after a short delay
-    setTimeout(() => {
-      console.log('📺 Channel state:', channel.state);
-      console.log('🔌 Socket state:', supabase.realtime.channels.length, 'channels active');
-    }, 2000);
-
     return () => {
-      console.log('🔌 Unsubscribing from products real-time channel');
+      console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [loading]); // Only set up after initial fetch is complete
 
   return {
     products,
