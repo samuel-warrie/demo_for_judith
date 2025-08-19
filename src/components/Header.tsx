@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Menu, X, Calendar, User } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Calendar, User, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useProducts } from '../hooks/useProducts';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginForm from './LoginForm';
@@ -16,12 +17,14 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
+  const { refreshProducts } = useProducts();
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -32,6 +35,12 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const handleSignOut = async () => {
     await signOut();
     setShowUserMenu(false);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshProducts();
+    setTimeout(() => setRefreshing(false), 1000); // Show spinner for at least 1 second
   };
 
   return (
@@ -77,6 +86,17 @@ export default function Header({ onSearchChange }: HeaderProps) {
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4">
               <LanguageSwitcher />
+              
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className={`p-2 text-gray-600 hover:text-black transition-colors ${
+                  refreshing ? 'animate-spin' : ''
+                }`}
+                title="Refresh products"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
               
               {user ? (
                 <div className="relative">
