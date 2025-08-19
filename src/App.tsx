@@ -6,7 +6,6 @@ import { AuthProvider } from './context/AuthContext';
 import { useWebSocketProducts } from './hooks/useWebSocketProducts';
 import { useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
-import LoginForm from './components/LoginForm';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import PriceFilter from './components/PriceFilter';
@@ -16,7 +15,6 @@ import SuccessPage from './pages/SuccessPage';
 import BookingPage from './pages/BookingPage';
 import BookingSuccessPage from './pages/BookingSuccessPage';
 import ProductDetailPage from './pages/ProductDetailPage';
-import AdminPage from './pages/AdminPage';
 import { Product } from './types';
 
 function HomePage() {
@@ -192,20 +190,14 @@ function HomePage() {
 }
 
 function AppContent() {
-  const [showLogin, setShowLogin] = useState(false);
-
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/success" element={<SuccessPage />} />
-        <Route path="/book" element={<BookingPage />} />
-        <Route path="/booking-success" element={<BookingSuccessPage />} />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
-      {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
-    </>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/success" element={<SuccessPage />} />
+      <Route path="/book" element={<BookingPage />} />
+      <Route path="/booking-success" element={<BookingSuccessPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
+    </Routes>
   );
 }
 
