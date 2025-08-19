@@ -37,15 +37,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   });
   
   // Add connection status logging
-  supabase.realtime.onOpen(() => {
+  supabase.realtime.on('CONNECT', () => {
     console.log('✅ Supabase real-time connection opened');
   });
   
-  supabase.realtime.onClose(() => {
+  supabase.realtime.on('DISCONNECT', () => {
     console.log('🔒 Supabase real-time connection closed');
   });
   
-  supabase.realtime.onError((error) => {
+  supabase.realtime.on('ERROR', (error) => {
     console.error('❌ Supabase real-time error:', error);
   });
 }
