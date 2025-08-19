@@ -190,7 +190,7 @@ export function useProducts() {
         if (document.visibilityState === 'visible') {
           fetchProducts();
         }
-      }, 60000);
+      }, 50000);
 
       // Cleanup subscription on unmount
       return () => {
