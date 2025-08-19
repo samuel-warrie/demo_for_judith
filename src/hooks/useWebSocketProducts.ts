@@ -14,6 +14,8 @@ export function useWebSocketProducts() {
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const channelRef = useRef<any>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -23,7 +25,7 @@ export function useWebSocketProducts() {
     }
 
     try {
-      console.log('📡 Fetching products from database...', new Date().toLocaleTimeString());
+      console.log('📡 Fetching products from database...');
       
       const { data, error: fetchError } = await supabase
         .from('products')
@@ -31,145 +33,121 @@ export function useWebSocketProducts() {
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.error('Error fetching products:', fetchError);
+        console.error('❌ Error fetching products:', fetchError);
         setError(`Failed to load products: ${fetchError.message}`);
         setProducts([]);
       } else {
-        console.log(`✅ Fetched ${data?.length || 0} products from database at`, new Date().toLocaleTimeString());
+        console.log(`✅ Fetched ${data?.length || 0} products successfully`);
         setProducts(data || []);
         setError(null);
+        lastFetchRef.current = Date.now();
       }
     } catch (err) {
-      console.error('Unexpected error fetching products:', err);
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      
-      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
-        setError('Network connection failed. Please check your internet connection and ensure your Supabase project is accessible.');
-      } else if (errorMessage.includes('CORS')) {
-        setError('CORS error: Please add your development server URL to Supabase project settings.');
-      } else {
-        setError(`Error: ${errorMessage}`);
-      }
+      console.error('❌ Unexpected error fetching products:', err);
+      setError('An unexpected error occurred while loading products');
       setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const setupRealtimeSubscription = async () => {
+  const setupRealtimeSubscription = () => {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, skipping real-time setup');
       return;
     }
 
-    console.log('🔌 Setting up real-time subscription for products...', new Date().toLocaleTimeString());
+    try {
+      console.log('🔌 Setting up Supabase real-time subscription...');
+      
+      // Clean up existing subscription
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+      }
 
-    // Clean up existing subscription
-    if (channelRef.current) {
-      console.log('🧹 Removing existing channel:', channelRef.current.topic);
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-      setConnected(false);
-    }
-
-    // Create new channel for products table changes
-    const channel = supabase
-      .channel('products-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        (payload) => {
-          console.log('🎉 REAL-TIME EVENT RECEIVED:', {
-            eventType: payload.eventType,
-            productName: payload.new?.name || payload.old?.name,
-            productId: payload.new?.id || payload.old?.id,
-            timestamp: new Date().toLocaleTimeString(),
-            fullPayload: payload
-          });
-          
-          switch (payload.eventType) {
-            case 'INSERT':
-              if (payload.new) {
-                console.log('➕ INSERTING NEW PRODUCT:', payload.new.name);
-                setProducts(prev => {
-                  const exists = prev.some(p => p.id === payload.new.id);
-                  if (exists) {
-                    console.log('⚠️ Product already exists in state, skipping insert');
-                    return prev;
-                  }
-                  const newProducts = [payload.new, ...prev];
-                  console.log('✅ PRODUCT ADDED TO STATE, new count:', newProducts.length);
-                  // Force a new array reference to trigger re-render
-                  return [...newProducts];
-                });
-              }
-              break;
-              
-            case 'UPDATE':
-              if (payload.new) {
-                console.log('✏️ UPDATING PRODUCT:', payload.new.name);
-                setProducts(prev => {
-                  const updated = prev.map(p => p.id === payload.new.id ? { ...payload.new } : p);
-                  console.log('✅ PRODUCT UPDATED IN STATE');
-                  // Force a new array reference to trigger re-render
-                  return [...updated];
-                });
-              }
-              break;
-              
-            case 'DELETE':
-              if (payload.old) {
-                console.log('🗑️ DELETING PRODUCT:', payload.old.name);
-                setProducts(prev => {
-                  const filtered = prev.filter(p => p.id !== payload.old.id);
-                  console.log('✅ PRODUCT REMOVED FROM STATE, new count:', filtered.length);
-                  // Force a new array reference to trigger re-render
-                  return [...filtered];
-                });
-              }
-              break;
-              
-            default:
-              console.log('❓ UNKNOWN EVENT TYPE:', payload.eventType);
+      // Create new channel with unique name
+      const channelName = `products-realtime-${Date.now()}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'products'
+          },
+          (payload) => {
+            console.log('🎉 REAL-TIME EVENT RECEIVED!', payload);
+            
+            switch (payload.eventType) {
+              case 'INSERT':
+                console.log('➕ Product added:', payload.new);
+                setProducts(prev => [payload.new as Product, ...prev]);
+                break;
+              case 'UPDATE':
+                console.log('✏️ Product updated:', payload.new);
+                setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as Product : p));
+                break;
+              case 'DELETE':
+                console.log('🗑️ Product deleted:', payload.old);
+                setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+                break;
+            }
           }
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 SUBSCRIPTION STATUS CHANGE:', status, 'at', new Date().toLocaleTimeString());
-        
-        switch (status) {
-          case 'SUBSCRIBED':
-            console.log('✅ REAL-TIME CONNECTED SUCCESSFULLY!');
+        )
+        .subscribe((status) => {
+          console.log('📡 REAL-TIME STATUS:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ REAL-TIME CONNECTED!');
             setConnected(true);
-            break;
+            setError(null);
             
-          case 'CHANNEL_ERROR':
-          case 'TIMED_OUT':
-          case 'CLOSED':
-            console.log('❌ REAL-TIME CONNECTION ISSUE:', status);
+            // Stop polling since real-time is working
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+          } else if (status === 'CHANNEL_ERROR') {
+            console.log('⚠️ Real-time channel error - using smart polling fallback');
             setConnected(false);
-            // Retry connection after 5 seconds
-            setTimeout(() => {
-              console.log('🔄 RETRYING REAL-TIME CONNECTION after', status);
-              setupRealtimeSubscription();
-            }, 5000);
-            break;
-            
-          default:
-            console.log('📡 REAL-TIME STATUS:', status);
-        }
-      });
+            startSmartPolling();
+          } else if (status === 'TIMED_OUT') {
+            console.log('⏰ Real-time connection timed out - using smart polling fallback');
+            setConnected(false);
+            startSmartPolling();
+          } else if (status === 'CLOSED') {
+            console.log('🔌 Real-time connection closed - using smart polling fallback');
+            setConnected(false);
+            startSmartPolling();
+          }
+        });
 
-    channelRef.current = channel;
-    console.log('📡 CHANNEL CREATED AND STORED');
+      channelRef.current = channel;
+    } catch (err) {
+      console.error('❌ Failed to setup real-time subscription:', err);
+      setConnected(false);
+      startSmartPolling();
+    }
+  };
+
+  const startSmartPolling = () => {
+    // Only start polling if not already polling
+    if (pollingIntervalRef.current) return;
+    
+    console.log('🔄 Starting smart polling fallback (30 seconds interval)');
+    pollingIntervalRef.current = setInterval(() => {
+      // Only fetch if it's been more than 25 seconds since last fetch
+      const timeSinceLastFetch = Date.now() - lastFetchRef.current;
+      if (timeSinceLastFetch > 25000) {
+        console.log('🔄 Smart polling: fetching updates...');
+        fetchProducts();
+      }
+    }, 30000); // Check every 30 seconds
   };
 
   const refreshProducts = () => {
-    console.log('🔄 MANUAL REFRESH TRIGGERED at', new Date().toLocaleTimeString());
+    console.log('🔄 Manual refresh triggered');
     fetchProducts();
   };
 
@@ -191,39 +169,37 @@ export function useWebSocketProducts() {
   };
 
   useEffect(() => {
-    console.log('🚀 INITIALIZING WEBSOCKET PRODUCTS HOOK');
-    
     // Initial fetch
     fetchProducts();
     
-    // Setup real-time subscription immediately after initial fetch
-    const setupTimer = setTimeout(async () => {
-      console.log('⏰ SETTING UP REAL-TIME SUBSCRIPTION...');
-      setupRealtimeSubscription();
-    }, 1000);
+    // Setup real-time subscription
+    setupRealtimeSubscription();
 
-    // Cleanup function
-    return () => {
-      console.log('🧹 CLEANING UP WEBSOCKET PRODUCTS HOOK');
-      clearTimeout(setupTimer);
-      
-      if (channelRef.current) {
-        console.log('🔌 UNSUBSCRIBING FROM REAL-TIME CHANNEL');
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-        setConnected(false);
+    // Handle tab visibility changes
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab became visible, refresh if it's been more than 30 seconds
+        const timeSinceLastFetch = Date.now() - lastFetchRef.current;
+        if (timeSinceLastFetch > 30000) {
+          console.log('👁️ Tab visible: refreshing products');
+          fetchProducts();
+        }
       }
     };
-  }, []); // Empty dependency array to run only once
 
-  // Add effect to log products state changes
-  useEffect(() => {
-    console.log('📊 PRODUCTS STATE UPDATED:', {
-      count: products.length,
-      timestamp: new Date().toLocaleTimeString(),
-      productNames: products.map(p => p.name).slice(0, 3) // Show first 3 product names
-    });
-  }, [products]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      // Cleanup
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+      }
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   return {
     products,
