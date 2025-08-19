@@ -84,19 +84,12 @@ export function useProducts() {
   useEffect(() => {
     fetchProducts();
     
-    // Set up real-time subscription for automatic updates with detailed debugging
+    // Set up real-time subscription for products table
     if (isSupabaseConfigured()) {
-      console.log('🔄 Setting up real-time subscription for products table...');
-      console.log('📡 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-      console.log('🔑 Supabase Key present:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+      console.log('Setting up real-time subscription for products...');
       
-      const channel = supabase
-        .channel('products-realtime', {
-          config: {
-            broadcast: { self: true },
-            presence: { key: 'products' }
-          }
-        })
+      const subscription = supabase
+        .channel('products-changes')
         .on(
           'postgres_changes',
           {
@@ -105,21 +98,55 @@ export function useProducts() {
             table: 'products'
           },
           (payload) => {
-            console.log('📡 REAL-TIME UPDATE RECEIVED:', payload);
-            console.log('📡 Event type:', payload.eventType);
-            console.log('📡 New data:', payload.new);
-            console.log('📡 Old data:', payload.old);
+            console.log('Real-time update received:', payload.eventType);
             
-            // Handle different types of changes
-            if (payload.eventType === 'INSERT') {
-              console.log('➕ Product added:', payload.new);
-              setProducts(prev => [...prev, payload.new as Product]);
-            } else if (payload.eventType === 'UPDATE') {
-              console.log('✏️ Product updated:', payload.new);
-              setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as Product : p));
-            } else if (payload.eventType === 'DELETE') {
-              console.log('🗑️ Product deleted:', payload.old);
-              setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+            // Refetch all products to ensure consistency
+            fetchProducts();
+          }
+        )
+        .subscribe((status) => {
+          console.log('Real-time subscription status:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Real-time updates enabled for products');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.warn('⚠️ Real-time channel error - check if Realtime is enabled for products table');
+          } else if (status === 'TIMED_OUT') {
+            console.warn('⚠️ Real-time connection timed out');
+          } else if (status === 'CLOSED') {
+            console.warn('⚠️ Real-time connection closed');
+          }
+        });
+
+      // Cleanup function
+      return () => {
+        console.log('Cleaning up real-time subscription');
+        supabase.removeChannel(subscription);
+      };
+    } else {
+      console.warn('Supabase not configured - real-time updates disabled');
+    }
+  }, []);
+
+  // Add a manual refresh function for testing
+  const refreshProducts = () => {
+    console.log('Manual refresh triggered');
+    fetchProducts();
+  };
+
+  return {
+    products,
+    loading,
+    error,
+    fetchProducts,
+    refreshProducts,
+    updateProductStock,
+    getProductsByCategory,
+    getProductById,
+    isLowStock,
+    isOutOfStock,
+  };
+}
             }
             
             // Force a re-render by updating a timestamp
