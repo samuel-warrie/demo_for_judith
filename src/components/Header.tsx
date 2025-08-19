@@ -66,14 +66,6 @@ export default function Header({ onSearchChange }: HeaderProps) {
                 >
                   {t('navigation.bookAppointment')}
                 </Link>
-                {user?.email?.includes('admin') && (
-                  <Link 
-                    to="/admin" 
-                    className="text-gray-600 hover:text-black transition-colors"
-                  >
-                    Admin
-                  </Link>
-                )}
               </nav>
             </div>
 

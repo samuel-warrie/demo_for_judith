@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X, Upload, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Upload, Eye, EyeOff, User, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
 import { supabase } from '../lib/supabase';
@@ -44,6 +44,167 @@ const initialFormState: ProductForm = {
   in_stock: true
 };
 
+function AdminSignIn() {
+  const { signIn, signUp } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if email contains 'admin'
+    if (!formData.email.toLowerCase().includes('admin')) {
+      alert('Admin access only. Please use an email containing "admin".');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        if (formData.password !== formData.confirmPassword) {
+          alert('Passwords do not match');
+          return;
+        }
+        
+        const { error } = await signUp(formData.email, formData.password);
+        if (error) {
+          alert(error.message);
+        } else {
+          alert('Admin account created successfully!');
+        }
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          alert(error.message);
+        }
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      alert('An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-lg max-w-md w-full mx-4 p-8">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Access</h1>
+          <p className="text-gray-600">
+            {isSignUp ? 'Create admin account' : 'Sign in to manage products'}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Admin Email
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                placeholder="admin@belovedbeauty.com"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Email must contain "admin" for access
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                placeholder="Enter password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="Confirm password"
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+              loading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-black text-white hover:bg-gray-800'
+            }`}
+          >
+            {loading ? 'Processing...' : (isSignUp ? 'Create Admin Account' : 'Sign In to Admin')}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-gray-600 hover:text-black transition-colors"
+          >
+            {isSignUp ? 'Already have admin access? Sign in' : "Need admin access? Create account"}
+          </button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <a
+            href="/"
+            className="block text-center text-sm text-gray-600 hover:text-black transition-colors"
+          >
+            ← Back to Shop
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const { products, refreshProducts } = useWebSocketProducts();
@@ -53,8 +214,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [showDescriptions, setShowDescriptions] = useState(false);
 
-  // Check if user is admin (you can modify this logic based on your auth setup)
-  const isAdmin = user?.email === 'admin@belovedbeauty.com' || user?.email?.includes('admin');
+  // Check if user is admin
+  const isAdmin = user?.email?.toLowerCase().includes('admin');
 
   useEffect(() => {
     if (editingProduct) {
@@ -77,6 +238,11 @@ export default function AdminPage() {
       });
     }
   }, [editingProduct]);
+
+  // Show admin sign-in form if not authenticated or not admin
+  if (!user || !isAdmin) {
+    return <AdminSignIn />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +281,7 @@ export default function AdminPage() {
       setEditingProduct(null);
       setIsEditing(false);
       
-      // Refresh products to show changes
+      // Refresh products to show changes immediately
       setTimeout(() => refreshProducts(), 500);
       
     } catch (error) {
@@ -168,28 +334,6 @@ export default function AdminPage() {
     setFormData(initialFormState);
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-          <p className="text-gray-600">Please sign in to access the admin panel.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Access Required</h2>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -199,14 +343,23 @@ export default function AdminPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
               <p className="text-gray-600 mt-1">Manage your product catalog</p>
+              <p className="text-sm text-green-600 mt-1">Signed in as: {user.email}</p>
             </div>
-            <button
-              onClick={startCreate}
-              className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors flex items-center space-x-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Product</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={startCreate}
+                className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors flex items-center space-x-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add Product</span>
+              </button>
+              <a
+                href="/"
+                className="text-gray-600 hover:text-black transition-colors"
+              >
+                ← Back to Shop
+              </a>
+            </div>
           </div>
         </div>
       </div>
