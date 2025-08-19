@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 const isSupabaseConfigured = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -12,6 +13,7 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -143,84 +145,101 @@ export function useProducts() {
     fetchProducts();
     
     if (isSupabaseConfigured()) {
-      console.log('🔧 Setting up real-time subscription for products table...');
+      console.log('🔧 Setting up enhanced real-time subscription for products table...');
       
-      // Set up real-time subscription using postgres_changes
+      // Create a unique channel name to avoid conflicts
+      const channelName = `products-realtime-${Date.now()}`;
+      console.log('📡 Creating channel:', channelName);
+      
       const channel = supabase
-        .channel('products-realtime-channel')
+        .channel(channelName)
         .on(
           'postgres_changes',
           {
-            event: '*', // Listen to all events: INSERT, UPDATE, DELETE
+            event: '*',
             schema: 'public',
-            table: 'products'
+            table: 'products',
           },
           (payload) => {
-            console.log('📡 REAL-TIME EVENT RECEIVED:', payload.eventType);
-            console.log('📡 Full payload:', JSON.stringify(payload, null, 2));
+            console.log('🎉 REAL-TIME EVENT RECEIVED!');
+            console.log('📡 Event type:', payload.eventType);
+            console.log('📡 Table:', payload.table);
+            console.log('📡 Schema:', payload.schema);
+            console.log('📡 New data:', payload.new);
+            console.log('📡 Old data:', payload.old);
             
-            // Handle different event types
             switch (payload.eventType) {
               case 'INSERT':
                 if (payload.new) {
-                  console.log('➕ ADDING NEW PRODUCT:', payload.new);
+                  console.log('➕ Adding new product to state:', payload.new);
                   addNewProduct(payload.new as Product);
                 }
                 break;
               case 'UPDATE':
                 if (payload.new) {
-                  console.log('🔄 UPDATING PRODUCT:', payload.new);
+                  console.log('🔄 Updating product in state:', payload.new);
                   updateSingleProduct(payload.new as Product);
                 }
                 break;
               case 'DELETE':
                 if (payload.old) {
-                  console.log('🗑️ REMOVING PRODUCT:', payload.old);
+                  console.log('🗑️ Removing product from state:', payload.old);
                   removeProduct((payload.old as Product).id);
                 }
                 break;
               default:
-                console.log('❓ Unknown event type:', payload.eventType);
+                console.log('❓ Unhandled event type:', payload.eventType);
             }
           }
         )
         .subscribe((status) => {
-          console.log('📡 SUBSCRIPTION STATUS CHANGED:', status);
+          console.log('📡 REAL-TIME STATUS:', status);
           
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ REAL-TIME SUCCESSFULLY CONNECTED!');
-            console.log('✅ Now listening for changes to products table');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time not available for products table');
-            console.warn('⚠️ To enable: Go to Supabase Dashboard → Database → Replication → Enable products table');
-          } else if (status === 'CLOSED') {
-            console.warn('⚠️ REAL-TIME CHANNEL CLOSED');
-          } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ REAL-TIME CONNECTION TIMED OUT');
-          } else {
-            console.log('📡 Other status:', status);
+          switch (status) {
+            case 'SUBSCRIBED':
+              console.log('✅ REAL-TIME CONNECTED! Listening for database changes...');
+              console.log('✅ Try changing a product in Supabase dashboard now');
+              break;
+            case 'CHANNEL_ERROR':
+              console.warn('⚠️ Real-time channel error - falling back to polling');
+              console.warn('⚠️ Check: Database → Publications → supabase_realtime');
+              break;
+            case 'CLOSED':
+              console.warn('⚠️ Real-time connection closed');
+              break;
+            case 'TIMED_OUT':
+              console.warn('⚠️ Real-time connection timed out');
+              break;
+            default:
+              console.log('📡 Real-time status:', status);
           }
         });
 
-      // Test the real-time connection
+      setRealtimeChannel(channel);
+      
+      // Enhanced connection testing
       setTimeout(() => {
-        console.log('🧪 Testing real-time connection...');
-        console.log('🧪 If you change something in the database now, you should see a message above');
-      }, 2000);
+        console.log('🧪 REAL-TIME TEST:');
+        console.log('🧪 1. Go to your Supabase dashboard');
+        console.log('🧪 2. Edit any product (change name, price, stock)');
+        console.log('🧪 3. You should see "🎉 REAL-TIME EVENT RECEIVED!" above');
+        console.log('🧪 4. The change should appear instantly in your app');
+      }, 3000);
 
-      // Reduced polling as fallback (every 5 minutes)
-      // This is much less frequent since real-time should handle most updates
+      // Fallback polling every 2 minutes (reduced from 5 minutes for better UX)
       const pollInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {
-          console.log('🔄 FALLBACK REFRESH (5min interval) - Real-time might not be working');
+          console.log('🔄 Fallback refresh (2min interval)');
           fetchProducts();
         }
-      }, 300000); // 5 minutes instead of 50 seconds
+      }, 120000); // 2 minutes
 
       // Cleanup subscription on unmount
       return () => {
-        console.log('🧹 Cleaning up real-time subscription');
-        supabase.removeChannel(channel);
+        console.log('🧹 Cleaning up real-time subscription and polling');
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
         clearInterval(pollInterval);
       };
     }

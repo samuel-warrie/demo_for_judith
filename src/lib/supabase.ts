@@ -25,13 +25,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
     },
     realtime: {
       params: {
-        eventsPerSecond: 10,
+        eventsPerSecond: 50,
       },
+      heartbeatIntervalMs: 30000,
+      reconnectAfterMs: (tries) => Math.min(tries * 1000, 30000),
     },
-    // Add global options for better debugging
     global: {
       headers: {
-        'X-Client-Info': 'supabase-js-web'
+        'X-Client-Info': 'supabase-js-web',
+        'X-Realtime-Debug': 'true'
       }
     }
   });
