@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Upload, Eye, EyeOff, User, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
+import { useProducts } from '../hooks/useProducts';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 
@@ -215,7 +215,7 @@ function AdminSignIn() {
 
 export default function AdminPage() {
   const { user } = useAuth();
-  const { products, refreshProducts } = useWebSocketProducts();
+  const { products, refreshProducts } = useProducts();
   const [isEditing, setIsEditing] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductForm>(initialFormState);
