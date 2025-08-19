@@ -139,7 +139,7 @@ export function useProducts() {
               console.log('➕ Adding new product to state');
               setProducts(prev => {
                 const updated = [...prev, payload.new as Product];
-                console.log('📈 Products count after INSERT:', newProducts.length);
+                console.log('📈 Products count after INSERT:', updated.length);
                 return updated;
               });
               break;
@@ -162,7 +162,7 @@ export function useProducts() {
               console.log('🗑️ Removing product from state');
               setProducts(prev => {
                 const updated = prev.filter(product => product.id !== payload.old.id);
-                console.log('📉 Products count after DELETE:', newProducts.length);
+                console.log('📉 Products count after DELETE:', updated.length);
                 return updated;
               });
               break;
@@ -188,7 +188,6 @@ export function useProducts() {
       supabase.removeChannel(channel);
     };
   }, [loading, products.length]);
-  )
 
   return {
     products,
