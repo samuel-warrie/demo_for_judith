@@ -14,7 +14,6 @@ export function useWebSocketProducts() {
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const channelRef = useRef<any>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastFetchRef = useRef<number>(0);
 
   const fetchProducts = async () => {
@@ -57,104 +56,80 @@ export function useWebSocketProducts() {
       return;
     }
 
-    try {
-      console.log('🔌 Setting up Supabase real-time subscription...');
-      
-      // Clean up existing subscription
-      if (channelRef.current) {
-        console.log('🧹 Cleaning up existing channel');
-        channelRef.current.unsubscribe();
-      }
+    console.log('🔌 Setting up real-time subscription for products...');
 
-      // Create new channel with unique name
-      const channelName = `products-realtime-${Date.now()}`;
-      console.log('📡 Creating channel:', channelName);
-      
-      const channel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'products'
-          },
-          (payload) => {
-            console.log('🎉 REAL-TIME EVENT RECEIVED!', payload);
-            
-            switch (payload.eventType) {
-              case 'INSERT':
-                console.log('➕ Product added:', payload.new);
-                setProducts(prev => [payload.new as Product, ...prev]);
-                break;
-              case 'UPDATE':
-                console.log('✏️ Product updated:', payload.new);
-                setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as Product : p));
-                break;
-              case 'DELETE':
-                console.log('🗑️ Product deleted:', payload.old);
-                setProducts(prev => prev.filter(p => p.id !== payload.old.id));
-                break;
-            }
-          }
-        )
-        .subscribe((status) => {
-          console.log('📡 REAL-TIME STATUS:', status);
-          
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ REAL-TIME CONNECTED!');
-            setConnected(true);
-            setError(null);
-            
-            // Stop polling since real-time is working
-            if (pollingIntervalRef.current) {
-              console.log('🛑 Stopping polling - real-time is active');
-              clearInterval(pollingIntervalRef.current);
-              pollingIntervalRef.current = null;
-            }
-          } else if (status === 'CHANNEL_ERROR') {
-            console.log('⚠️ Real-time channel error - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
-          } else if (status === 'TIMED_OUT') {
-            console.log('⏰ Real-time connection timed out - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
-          } else if (status === 'CLOSED') {
-            console.log('🔌 Real-time connection closed - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
-          } else {
-            console.log('📡 Real-time status:', status);
-          }
-        });
-
-      channelRef.current = channel;
-    } catch (err) {
-      console.error('❌ Failed to setup real-time subscription:', err);
-      setConnected(false);
-      startSmartPolling();
+    // Clean up existing subscription
+    if (channelRef.current) {
+      console.log('🧹 Unsubscribing from existing channel');
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
+
+    // Create new channel
+    const channel = supabase
+      .channel('products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('🎉 Real-time update received:', payload.eventType, payload);
+          
+          switch (payload.eventType) {
+            case 'INSERT':
+              console.log('➕ Adding new product:', payload.new);
+              setProducts(prev => {
+                // Check if product already exists to avoid duplicates
+                const exists = prev.some(p => p.id === payload.new.id);
+                if (exists) return prev;
+                return [payload.new as Product, ...prev];
+              });
+              break;
+              
+            case 'UPDATE':
+              console.log('✏️ Updating product:', payload.new);
+              setProducts(prev => 
+                prev.map(p => p.id === payload.new.id ? payload.new as Product : p)
+              );
+              break;
+              
+            case 'DELETE':
+              console.log('🗑️ Removing product:', payload.old);
+              setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+              break;
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Real-time subscription status:', status);
+        
+        switch (status) {
+          case 'SUBSCRIBED':
+            console.log('✅ Real-time connected successfully!');
+            setConnected(true);
+            break;
+            
+          case 'CHANNEL_ERROR':
+          case 'TIMED_OUT':
+          case 'CLOSED':
+            console.log('❌ Real-time connection failed:', status);
+            setConnected(false);
+            break;
+            
+          default:
+            console.log('📡 Real-time status:', status);
+        }
+      });
+
+    channelRef.current = channel;
   };
 
-  const startSmartPolling = () => {
-    // Only start polling if not already polling
-    if (pollingIntervalRef.current) return;
-    
-    console.log('🔄 Starting smart polling fallback (30 seconds interval)');
-    pollingIntervalRef.current = setInterval(() => {
-      // Only fetch if it's been more than 25 seconds since last fetch
-      const timeSinceLastFetch = Date.now() - lastFetchRef.current;
-      if (timeSinceLastFetch > 25000) {
-        console.log('🔄 Smart polling: fetching updates...');
-        fetchProducts();
-      }
-    }, 30000); // Check every 30 seconds
-  };
-
-  const refreshProducts = () => {
+  const refreshProducts = async () => {
     console.log('🔄 Manual refresh triggered');
-    fetchProducts();
+    await fetchProducts();
   };
 
   const getProductsByCategory = (category: string) => {
@@ -175,35 +150,26 @@ export function useWebSocketProducts() {
   };
 
   useEffect(() => {
+    console.log('🚀 Initializing WebSocket products hook');
+    
     // Initial fetch
     fetchProducts();
     
-    // Setup real-time subscription
-    setupRealtimeSubscription();
+    // Setup real-time subscription after initial fetch
+    const timer = setTimeout(() => {
+      setupRealtimeSubscription();
+    }, 1000);
 
-    // Handle tab visibility changes
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // Tab became visible, refresh if it's been more than 30 seconds
-        const timeSinceLastFetch = Date.now() - lastFetchRef.current;
-        if (timeSinceLastFetch > 30000) {
-          console.log('👁️ Tab visible: refreshing products');
-          fetchProducts();
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
+    // Cleanup function
     return () => {
-      // Cleanup
+      console.log('🧹 Cleaning up WebSocket products hook');
+      clearTimeout(timer);
+      
       if (channelRef.current) {
-        channelRef.current.unsubscribe();
+        console.log('🔌 Unsubscribing from real-time channel');
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
