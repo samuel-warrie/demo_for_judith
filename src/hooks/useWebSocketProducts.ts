@@ -16,6 +16,8 @@ export function useWebSocketProducts() {
   const channelRef = useRef<any>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastFetchRef = useRef<number>(0);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -62,13 +64,26 @@ export function useWebSocketProducts() {
       
       // Clean up existing subscription
       if (channelRef.current) {
+        console.log('🧹 Cleaning up existing channel');
         channelRef.current.unsubscribe();
+        channelRef.current = null;
       }
 
-      // Create new channel with unique name
-      const channelName = `products-realtime-${Date.now()}`;
+      // Create new channel with unique name and specific configuration
+      const channelName = `products-realtime-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log('📺 Creating channel:', channelName);
+      
       const channel = supabase
-        .channel(channelName)
+        .channel(channelName, {
+          config: {
+            presence: {
+              key: 'products-listener'
+            },
+            broadcast: {
+              self: true
+            }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -82,7 +97,12 @@ export function useWebSocketProducts() {
             switch (payload.eventType) {
               case 'INSERT':
                 console.log('➕ Product added:', payload.new);
-                setProducts(prev => [payload.new as Product, ...prev]);
+                setProducts(prev => {
+                  // Check if product already exists to avoid duplicates
+                  const exists = prev.some(p => p.id === payload.new.id);
+                  if (exists) return prev;
+                  return [payload.new as Product, ...prev];
+                });
                 break;
               case 'UPDATE':
                 console.log('✏️ Product updated:', payload.new);
@@ -95,31 +115,48 @@ export function useWebSocketProducts() {
             }
           }
         )
-        .subscribe((status) => {
+        .subscribe((status, err) => {
           console.log('📡 REAL-TIME STATUS:', status);
           
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ REAL-TIME CONNECTED!');
-            setConnected(true);
-            setError(null);
-            
-            // Stop polling since real-time is working
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-              pollingIntervalRef.current = null;
-            }
-          } else if (status === 'CHANNEL_ERROR') {
-            console.log('⚠️ Real-time channel error - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
-          } else if (status === 'TIMED_OUT') {
-            console.log('⏰ Real-time connection timed out - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
-          } else if (status === 'CLOSED') {
-            console.log('🔌 Real-time connection closed - using smart polling fallback');
-            setConnected(false);
-            startSmartPolling();
+          if (err) {
+            console.error('📡 REAL-TIME ERROR:', err);
+          }
+          
+          switch (status) {
+            case 'SUBSCRIBED':
+              console.log('✅ REAL-TIME CONNECTED!');
+              setConnected(true);
+              setError(null);
+              reconnectAttemptsRef.current = 0;
+              
+              // Stop polling since real-time is working
+              if (pollingIntervalRef.current) {
+                console.log('🛑 Stopping polling - real-time is active');
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+              }
+              break;
+              
+            case 'CHANNEL_ERROR':
+              console.log('⚠️ Real-time channel error - using polling fallback');
+              setConnected(false);
+              startSmartPolling();
+              scheduleReconnect();
+              break;
+              
+            case 'TIMED_OUT':
+              console.log('⏰ Real-time connection timed out - using polling fallback');
+              setConnected(false);
+              startSmartPolling();
+              scheduleReconnect();
+              break;
+              
+            case 'CLOSED':
+              console.log('🔌 Real-time connection closed - using polling fallback');
+              setConnected(false);
+              startSmartPolling();
+              scheduleReconnect();
+              break;
           }
         });
 
@@ -128,6 +165,29 @@ export function useWebSocketProducts() {
       console.error('❌ Failed to setup real-time subscription:', err);
       setConnected(false);
       startSmartPolling();
+    }
+  };
+
+  const scheduleReconnect = () => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+
+    const maxAttempts = 5;
+    const baseDelay = 5000; // 5 seconds
+    
+    if (reconnectAttemptsRef.current < maxAttempts) {
+      const delay = baseDelay * Math.pow(2, reconnectAttemptsRef.current); // Exponential backoff
+      
+      console.log(`🔄 Scheduling reconnect attempt ${reconnectAttemptsRef.current + 1}/${maxAttempts} in ${delay}ms`);
+      
+      reconnectTimeoutRef.current = setTimeout(() => {
+        reconnectAttemptsRef.current++;
+        console.log(`🔄 Reconnect attempt ${reconnectAttemptsRef.current}/${maxAttempts}`);
+        setupRealtimeSubscription();
+      }, delay);
+    } else {
+      console.log('❌ Max reconnect attempts reached, staying on polling');
     }
   };
 
@@ -191,11 +251,19 @@ export function useWebSocketProducts() {
 
     return () => {
       // Cleanup
+      console.log('🧹 Cleaning up useWebSocketProducts');
+      
       if (channelRef.current) {
         channelRef.current.unsubscribe();
+        channelRef.current = null;
       }
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
