@@ -12,8 +12,14 @@ interface ProductGridProps {
 export default function ProductGrid({ products, loading }: ProductGridProps) {
   const { t } = useTranslation();
 
-  // Memoize products to prevent unnecessary re-renders
-  const memoizedProducts = useMemo(() => products, [products]);
+  // Add debugging to see when products change
+  React.useEffect(() => {
+    console.log('🎨 ProductGrid received products update:', {
+      count: products.length,
+      timestamp: new Date().toLocaleTimeString(),
+      productIds: products.map(p => p.id).slice(0, 3)
+    });
+  }, [products]);
 
   if (loading) {
     return (
@@ -41,7 +47,7 @@ export default function ProductGrid({ products, loading }: ProductGridProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {memoizedProducts.map((product) => (
+      {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
     </div>

@@ -103,7 +103,8 @@ export function useWebSocketProducts() {
                   }
                   const newProducts = [payload.new, ...prev];
                   console.log('✅ PRODUCT ADDED TO STATE, new count:', newProducts.length);
-                  return newProducts;
+                  // Force a new array reference to trigger re-render
+                  return [...newProducts];
                 });
               }
               break;
@@ -112,9 +113,10 @@ export function useWebSocketProducts() {
               if (payload.new) {
                 console.log('✏️ UPDATING PRODUCT:', payload.new.name);
                 setProducts(prev => {
-                  const updated = prev.map(p => p.id === payload.new.id ? payload.new : p);
+                  const updated = prev.map(p => p.id === payload.new.id ? { ...payload.new } : p);
                   console.log('✅ PRODUCT UPDATED IN STATE');
-                  return updated;
+                  // Force a new array reference to trigger re-render
+                  return [...updated];
                 });
               }
               break;
@@ -125,7 +127,8 @@ export function useWebSocketProducts() {
                 setProducts(prev => {
                   const filtered = prev.filter(p => p.id !== payload.old.id);
                   console.log('✅ PRODUCT REMOVED FROM STATE, new count:', filtered.length);
-                  return filtered;
+                  // Force a new array reference to trigger re-render
+                  return [...filtered];
                 });
               }
               break;
