@@ -20,6 +20,8 @@ import { Product } from './types';
 
 function HomePage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { planName, isActive } = useSubscription();
   const { products, loading, error, connected, getProductsByCategory, refreshProducts } = useWebSocketProducts();
 
   if (error) {
@@ -38,9 +40,6 @@ function HomePage() {
       </div>
     );
   }
-
-  const { user } = useAuth();
-  const { planName, isActive } = useSubscription();
 
   // Show connection status for debugging
   console.log('WebSocket connected:', connected);
