@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Menu, X, Calendar, Settings, User } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Calendar, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -90,16 +90,6 @@ export default function Header({ onSearchChange }: HeaderProps) {
                   {showUserMenu && (
                     <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] z-50">
                       <div className="py-1">
-                        <button
-                          onClick={() => {
-                            navigate('/admin');
-                            setShowUserMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                        >
-                          <Settings className="w-4 h-4" />
-                          <span>Admin Dashboard</span>
-                        </button>
                         <button
                           onClick={handleSignOut}
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
