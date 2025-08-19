@@ -143,32 +143,36 @@ export function useProducts() {
     fetchProducts();
     
     if (isSupabaseConfigured()) {
+      // Set up real-time subscription using postgres_changes
       const channel = supabase
-        .channel('public:products')
+        .channel('products-changes')
         .on(
           'postgres_changes',
           {
-            event: '*',
+            event: '*', // Listen to all events: INSERT, UPDATE, DELETE
             schema: 'public',
             table: 'products'
           },
           (payload) => {
-            console.log('📡 Real-time update:', payload.eventType);
+            console.log('📡 Real-time postgres change:', payload.eventType, payload);
             
-            // Handle different event types without full refetch
+            // Handle different event types
             switch (payload.eventType) {
               case 'INSERT':
                 if (payload.new) {
+                  console.log('➕ Adding new product:', payload.new);
                   addNewProduct(payload.new as Product);
                 }
                 break;
               case 'UPDATE':
                 if (payload.new) {
+                  console.log('🔄 Updating product:', payload.new);
                   updateSingleProduct(payload.new as Product);
                 }
                 break;
               case 'DELETE':
                 if (payload.old) {
+                  console.log('🗑️ Removing product:', payload.old);
                   removeProduct((payload.old as Product).id);
                 }
                 break;
@@ -176,24 +180,29 @@ export function useProducts() {
           }
         )
         .subscribe((status) => {
-          console.log('📡 Real-time subscription status:', status);
+          console.log('📡 Postgres changes subscription status:', status);
           
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Real-time updates enabled');
+            console.log('✅ Real-time postgres changes enabled');
           } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time channel error');
+            console.warn('⚠️ Postgres changes channel error');
+          } else if (status === 'CLOSED') {
+            console.warn('⚠️ Postgres changes channel closed');
           }
         });
 
-      // Set up polling as fallback (every 60 seconds)
+      // Optional: Set up minimal polling as fallback (every 5 minutes)
+      // This is much less frequent since real-time should handle most updates
       const pollInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {
+          console.log('🔄 Fallback refresh (5min interval)');
           fetchProducts();
         }
-      }, 50000);
+      }, 300000); // 5 minutes instead of 50 seconds
 
       // Cleanup subscription on unmount
       return () => {
+        console.log('🧹 Cleaning up real-time subscription');
         supabase.removeChannel(channel);
         clearInterval(pollInterval);
       };
