@@ -89,7 +89,7 @@ export function useProducts() {
       console.log('🔄 Setting up real-time subscription for products...');
       
       const channel = supabase
-        .channel('products-changes')
+        .channel('public:products')
         .on(
           'postgres_changes',
           {
@@ -99,8 +99,18 @@ export function useProducts() {
           },
           (payload) => {
             console.log('📡 Real-time update received:', payload);
-            // Refetch all products when any change occurs
-            fetchProducts();
+            
+            // Handle different types of changes
+            if (payload.eventType === 'INSERT') {
+              console.log('➕ Product added:', payload.new);
+              setProducts(prev => [...prev, payload.new as Product]);
+            } else if (payload.eventType === 'UPDATE') {
+              console.log('✏️ Product updated:', payload.new);
+              setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as Product : p));
+            } else if (payload.eventType === 'DELETE') {
+              console.log('🗑️ Product deleted:', payload.old);
+              setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+            }
           }
         )
         .subscribe((status) => {
@@ -108,11 +118,18 @@ export function useProducts() {
           if (status === 'SUBSCRIBED') {
             console.log('✅ Real-time updates enabled for products');
           } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time channel error - updates may not work automatically');
+            console.warn('⚠️ Real-time channel error - falling back to periodic refresh');
+            // Set up periodic refresh as fallback
+            const interval = setInterval(fetchProducts, 30000); // Refresh every 30 seconds
+            return () => clearInterval(interval);
           } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ Real-time connection timed out - updates may not work automatically');
+            console.warn('⚠️ Real-time connection timed out - falling back to periodic refresh');
+            const interval = setInterval(fetchProducts, 30000);
+            return () => clearInterval(interval);
           } else if (status === 'CLOSED') {
-            console.warn('⚠️ Real-time connection closed - updates may not work automatically');
+            console.warn('⚠️ Real-time connection closed - falling back to periodic refresh');
+            const interval = setInterval(fetchProducts, 30000);
+            return () => clearInterval(interval);
           }
         });
 
