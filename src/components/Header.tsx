@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
-import LoginForm from './LoginForm';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -21,7 +20,6 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -122,7 +120,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
                 </div>
               ) : (
                 <button
-                  onClick={() => setShowLogin(true)}
+                  onClick={() => {}}
                   className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-black transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -204,7 +202,6 @@ export default function Header({ onSearchChange }: HeaderProps) {
       </header>
 
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
     </>
   );
 }
