@@ -62,52 +62,47 @@ export function useWebSocketProducts() {
       return;
     }
 
-    console.log('🔌 Setting up real-time subscription for products...');
+    console.log('🔌 Setting up real-time subscription for products...', new Date().toLocaleTimeString());
 
     // Clean up existing subscription
     if (channelRef.current) {
-      console.log('🧹 Removing existing channel');
+      console.log('🧹 Removing existing channel:', channelRef.current.topic);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       setConnected(false);
     }
 
-    // Create new channel with unique name
-    const channelName = `products-realtime-${Date.now()}`;
-    const channel = supabase.channel(channelName, {
-      config: {
-        broadcast: { self: false },
-        presence: { key: '' }
-      }
-    })
+    // Create new channel for products table changes
+    const channel = supabase
+      .channel('products-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'products',
-          filter: null
+          table: 'products'
         },
         (payload) => {
-          console.log('🎉 Real-time update received:', {
+          console.log('🎉 REAL-TIME EVENT RECEIVED:', {
             eventType: payload.eventType,
             productName: payload.new?.name || payload.old?.name,
             productId: payload.new?.id || payload.old?.id,
-            timestamp: new Date().toLocaleTimeString()
+            timestamp: new Date().toLocaleTimeString(),
+            fullPayload: payload
           });
           
           switch (payload.eventType) {
             case 'INSERT':
               if (payload.new) {
-                console.log('➕ Adding new product:', payload.new.name);
+                console.log('➕ INSERTING NEW PRODUCT:', payload.new.name);
                 setProducts(prev => {
                   const exists = prev.some(p => p.id === payload.new.id);
                   if (exists) {
-                    console.log('⚠️ Product already exists, skipping insert');
+                    console.log('⚠️ Product already exists in state, skipping insert');
                     return prev;
                   }
-                  const newProducts = [payload.new as Product, ...prev];
-                  console.log('✅ Product added, new count:', newProducts.length);
+                  const newProducts = [payload.new, ...prev];
+                  console.log('✅ PRODUCT ADDED TO STATE, new count:', newProducts.length);
                   return newProducts;
                 });
               }
@@ -115,10 +110,10 @@ export function useWebSocketProducts() {
               
             case 'UPDATE':
               if (payload.new) {
-                console.log('✏️ Updating product:', payload.new.name);
+                console.log('✏️ UPDATING PRODUCT:', payload.new.name);
                 setProducts(prev => {
-                  const updated = prev.map(p => p.id === payload.new.id ? payload.new as Product : p);
-                  console.log('✅ Product updated');
+                  const updated = prev.map(p => p.id === payload.new.id ? payload.new : p);
+                  console.log('✅ PRODUCT UPDATED IN STATE');
                   return updated;
                 });
               }
@@ -126,52 +121,52 @@ export function useWebSocketProducts() {
               
             case 'DELETE':
               if (payload.old) {
-                console.log('🗑️ Removing product:', payload.old.name);
+                console.log('🗑️ DELETING PRODUCT:', payload.old.name);
                 setProducts(prev => {
                   const filtered = prev.filter(p => p.id !== payload.old.id);
-                  console.log('✅ Product removed, new count:', filtered.length);
+                  console.log('✅ PRODUCT REMOVED FROM STATE, new count:', filtered.length);
                   return filtered;
                 });
               }
               break;
               
             default:
-              console.log('❓ Unknown event type:', payload.eventType);
+              console.log('❓ UNKNOWN EVENT TYPE:', payload.eventType);
           }
         }
       )
       .subscribe((status) => {
-        console.log('📡 Real-time subscription status:', status, 'at', new Date().toLocaleTimeString());
+        console.log('📡 SUBSCRIPTION STATUS CHANGE:', status, 'at', new Date().toLocaleTimeString());
         
         switch (status) {
           case 'SUBSCRIBED':
-            console.log('✅ Real-time connected successfully! Channel:', channelName);
+            console.log('✅ REAL-TIME CONNECTED SUCCESSFULLY!');
             setConnected(true);
             break;
             
           case 'CHANNEL_ERROR':
           case 'TIMED_OUT':
           case 'CLOSED':
-            console.log('❌ Real-time connection issue:', status, 'Channel:', channelName);
+            console.log('❌ REAL-TIME CONNECTION ISSUE:', status);
             setConnected(false);
             // Retry connection after 5 seconds
             setTimeout(() => {
-              console.log('🔄 Retrying real-time connection after', status);
+              console.log('🔄 RETRYING REAL-TIME CONNECTION after', status);
               setupRealtimeSubscription();
             }, 5000);
             break;
             
           default:
-            console.log('📡 Real-time status:', status, 'Channel:', channelName);
+            console.log('📡 REAL-TIME STATUS:', status);
         }
       });
 
     channelRef.current = channel;
-    console.log('📡 Channel created and stored:', channelName);
+    console.log('📡 CHANNEL CREATED AND STORED');
   };
 
   const refreshProducts = () => {
-    console.log('🔄 Manual refresh triggered at', new Date().toLocaleTimeString());
+    console.log('🔄 MANUAL REFRESH TRIGGERED at', new Date().toLocaleTimeString());
     fetchProducts();
   };
 
@@ -193,29 +188,39 @@ export function useWebSocketProducts() {
   };
 
   useEffect(() => {
-    console.log('🚀 Initializing WebSocket products hook');
+    console.log('🚀 INITIALIZING WEBSOCKET PRODUCTS HOOK');
     
     // Initial fetch
     fetchProducts();
     
-    // Setup real-time subscription after initial fetch completes
-    const setupTimer = setTimeout(() => {
+    // Setup real-time subscription immediately after initial fetch
+    const setupTimer = setTimeout(async () => {
+      console.log('⏰ SETTING UP REAL-TIME SUBSCRIPTION...');
       setupRealtimeSubscription();
-    }, 2000);
+    }, 1000);
 
     // Cleanup function
     return () => {
-      console.log('🧹 Cleaning up WebSocket products hook');
+      console.log('🧹 CLEANING UP WEBSOCKET PRODUCTS HOOK');
       clearTimeout(setupTimer);
       
       if (channelRef.current) {
-        console.log('🔌 Unsubscribing from real-time channel');
+        console.log('🔌 UNSUBSCRIBING FROM REAL-TIME CHANNEL');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
         setConnected(false);
       }
     };
-  }, []);
+  }, []); // Empty dependency array to run only once
+
+  // Add effect to log products state changes
+  useEffect(() => {
+    console.log('📊 PRODUCTS STATE UPDATED:', {
+      count: products.length,
+      timestamp: new Date().toLocaleTimeString(),
+      productNames: products.map(p => p.name).slice(0, 3) // Show first 3 product names
+    });
+  }, [products]);
 
   return {
     products,
