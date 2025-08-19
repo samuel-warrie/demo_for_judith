@@ -16,6 +16,7 @@ import SuccessPage from './pages/SuccessPage';
 import BookingPage from './pages/BookingPage';
 import BookingSuccessPage from './pages/BookingSuccessPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import AdminPage from './pages/AdminPage';
 import { Product } from './types';
 
 function HomePage() {
@@ -202,6 +203,7 @@ function AppContent() {
         <Route path="/book" element={<BookingPage />} />
         <Route path="/booking-success" element={<BookingSuccessPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
       {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}
     </>
