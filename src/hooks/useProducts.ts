@@ -83,11 +83,48 @@ export function useProducts() {
 
   useEffect(() => {
     fetchProducts();
-    // Real-time updates disabled due to WebSocket connection issues
-    // To enable: Go to Supabase Dashboard → Database → Replication → Enable products table
-    console.log('ℹ️ Real-time updates disabled - refresh page to see database changes');
+    
+    // Set up real-time subscription for automatic updates
+    if (isSupabaseConfigured()) {
+      console.log('🔄 Setting up real-time subscription for products...');
+      
+      const channel = supabase
+        .channel('products-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'products'
+          },
+          (payload) => {
+            console.log('📡 Real-time update received:', payload);
+            // Refetch all products when any change occurs
+            fetchProducts();
+          }
+        )
+        .subscribe((status) => {
+          console.log('📡 Real-time subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Real-time updates enabled for products');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.warn('⚠️ Real-time channel error - updates may not work automatically');
+          } else if (status === 'TIMED_OUT') {
+            console.warn('⚠️ Real-time connection timed out - updates may not work automatically');
+          } else if (status === 'CLOSED') {
+            console.warn('⚠️ Real-time connection closed - updates may not work automatically');
+          }
+        });
   }, []);
 
+      // Cleanup subscription on unmount
+      return () => {
+        console.log('🧹 Cleaning up real-time subscription');
+        supabase.removeChannel(channel);
+      };
+    } else {
+      console.log('ℹ️ Real-time updates disabled - Supabase not configured');
+    }
   return {
     products,
     loading,
