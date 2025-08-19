@@ -20,9 +20,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { user, session } = useAuth();
   const navigate = useNavigate();
 
-  // Debug logging
-  console.log('ProductCard rendering with product:', product);
-  
   // Proper stock calculations
   const stockQuantity = product.stock_quantity ?? 0;
   const lowStockThreshold = product.low_stock_threshold ?? 5;

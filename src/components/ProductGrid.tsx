@@ -1,4 +1,5 @@
 import React from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Product } from '../types';
 import ProductCard from './ProductCard';
@@ -10,6 +11,9 @@ interface ProductGridProps {
 
 export default function ProductGrid({ products, loading }: ProductGridProps) {
   const { t } = useTranslation();
+
+  // Memoize products to prevent unnecessary re-renders
+  const memoizedProducts = useMemo(() => products, [products]);
 
   if (loading) {
     return (
@@ -37,8 +41,8 @@ export default function ProductGrid({ products, loading }: ProductGridProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => (
-        <ProductCard key={`${product.id}-${product.updated_at}`} product={product} />
+      {memoizedProducts.map((product) => (
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );

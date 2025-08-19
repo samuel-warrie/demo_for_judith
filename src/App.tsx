@@ -55,7 +55,6 @@ function HomePage() {
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = getProductsByCategory(selectedCategory).filter((product: Product) => {
-      // Category filter
       // Price filter
       if (product.price < priceRange[0] || product.price > priceRange[1]) {
         return false;
@@ -87,10 +86,6 @@ function HomePage() {
 
     return filtered;
   }, [products, selectedCategory, priceRange, sortBy, searchQuery, getProductsByCategory]);
-
-  // Debug logging for filtered products
-  console.log('Filtered products:', filteredAndSortedProducts);
-  console.log('Filtered products length:', filteredAndSortedProducts.length);
 
   // Calculate categories with counts
   const categories = useMemo(() => [
