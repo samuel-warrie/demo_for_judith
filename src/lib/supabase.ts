@@ -21,7 +21,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storage: localStorage
+      storage: localStorage,
+      flowType: 'pkce'
     },
     realtime: {
       params: {
