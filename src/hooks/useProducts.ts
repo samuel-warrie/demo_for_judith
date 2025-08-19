@@ -12,7 +12,6 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastFetch, setLastFetch] = useState<number>(0);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -49,7 +48,6 @@ export function useProducts() {
         console.log(`✅ Fetched ${data?.length || 0} products from database`);
         setProducts(data || []);
         setError(null);
-        setLastFetch(Date.now());
       }
     } catch (err) {
       console.error('Unexpected error fetching products:', err);
@@ -68,8 +66,29 @@ export function useProducts() {
     }
   };
 
+  const updateSingleProduct = (updatedProduct: Product) => {
+    setProducts(prevProducts => 
+      prevProducts.map(product => 
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
+  };
+
+  const addNewProduct = (newProduct: Product) => {
+    setProducts(prevProducts => {
+      const exists = prevProducts.some(p => p.id === newProduct.id);
+      if (exists) {
+        return prevProducts.map(p => p.id === newProduct.id ? newProduct : p);
+      }
+      return [newProduct, ...prevProducts];
+    });
+  };
+
+  const removeProduct = (productId: string) => {
+    setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
+  };
+
   const refreshProducts = () => {
-    console.log('🔄 Manual refresh triggered');
     fetchProducts();
   };
 
@@ -88,10 +107,13 @@ export function useProducts() {
       }
       
       // Immediately refresh products after stock update
-      setTimeout(() => {
-        console.log('🔄 Refreshing products after stock update');
-        fetchProducts();
-      }, 500);
+      setProducts(prevProducts => 
+        prevProducts.map(product => 
+          product.id === productId 
+            ? { ...product, stock_quantity: newStock }
+            : product
+        )
+      );
       
       return true;
     } catch (err) {
@@ -121,8 +143,6 @@ export function useProducts() {
     fetchProducts();
     
     if (isSupabaseConfigured()) {
-      console.log('🔗 Setting up real-time subscription for products table...');
-      
       const channel = supabase
         .channel('public:products')
         .on(
@@ -133,64 +153,52 @@ export function useProducts() {
             table: 'products'
           },
           (payload) => {
-            console.log('📡 Real-time update received:', payload.eventType, payload);
-            console.log('🔄 Refreshing products due to real-time update...');
-            setTimeout(() => fetchProducts(), 100);
+            console.log('📡 Real-time update:', payload.eventType);
             
-            // Force a re-render by updating a timestamp
-            console.log('🔄 Forcing component re-render...');
+            // Handle different event types without full refetch
+            switch (payload.eventType) {
+              case 'INSERT':
+                if (payload.new) {
+                  addNewProduct(payload.new as Product);
+                }
+                break;
+              case 'UPDATE':
+                if (payload.new) {
+                  updateSingleProduct(payload.new as Product);
+                }
+                break;
+              case 'DELETE':
+                if (payload.old) {
+                  removeProduct((payload.old as Product).id);
+                }
+                break;
+            }
           }
         )
         .subscribe((status) => {
           console.log('📡 Real-time subscription status:', status);
           
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Real-time updates enabled for products table');
+            console.log('✅ Real-time updates enabled');
           } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Real-time channel error - check if Realtime is enabled for products table');
-          } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ Real-time connection timed out');
-          } else if (status === 'CLOSED') {
-            console.warn('⚠️ Real-time connection closed');
-          }
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ REAL-TIME UPDATES SUCCESSFULLY ENABLED FOR PRODUCTS TABLE');
-            console.log('🎯 Listening for changes on public.products table');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ REAL-TIME CHANNEL ERROR - This is expected if Realtime is not enabled for the products table');
-            console.log('🔄 Attempting to reconnect...');
-          } else if (status === 'TIMED_OUT') {
-            console.warn('⚠️ REAL-TIME CONNECTION TIMED OUT - This is expected if Realtime is not enabled');
-          } else if (status === 'CLOSED') {
-            console.warn('⚠️ REAL-TIME CONNECTION CLOSED - This is expected if Realtime is not enabled');
-          } else {
-            console.log('📡 Real-time status:', status);
+            console.warn('⚠️ Real-time channel error');
           }
         });
 
-      // Set up polling as fallback (every 30 seconds)
+      // Set up polling as fallback (every 60 seconds)
       const pollInterval = setInterval(() => {
-        const timeSinceLastFetch = Date.now() - lastFetch;
-        if (timeSinceLastFetch > 25000) { // Only poll if no recent fetch
-          console.log('🔄 Polling for product updates...');
+        if (document.visibilityState === 'visible') {
           fetchProducts();
         }
-      }, 30000);
-
-      // Test the connection after a short delay
-      setTimeout(() => {
-        console.log('🧪 Testing real-time connection...');
-        console.log('📊 Current channel state:', channel);
-      }, 2000);
+      }, 60000);
 
       // Cleanup subscription on unmount
       return () => {
-        console.log('🧹 Cleaning up real-time subscription and polling');
         supabase.removeChannel(channel);
         clearInterval(pollInterval);
       };
     }
-  }, [lastFetch]);
+  }, []);
 
   return {
     products,
