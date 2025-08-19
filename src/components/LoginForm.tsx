@@ -61,6 +61,13 @@ export default function LoginForm({ onClose }: LoginFormProps) {
           <p className="text-gray-600">
             {isSignUp ? 'Join Beloved Beauty' : 'Welcome back'}
           </p>
+          {isSignUp && (
+            <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-700">
+                💡 <strong>Admin Access:</strong> Use an email containing 'admin' (e.g., admin@test.com) to get admin privileges
+              </p>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
