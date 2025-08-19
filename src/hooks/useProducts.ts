@@ -5,7 +5,7 @@ import { Product } from '../types';
 const isSupabaseConfigured = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== 'https://dummy.supabase.co');
+  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== 'https://dummy.supabase.co' && supabaseUrl.startsWith('https://'));
 };
 
 export function useProducts() {
@@ -16,7 +16,7 @@ export function useProducts() {
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
-      setError('Database is not configured');
+      setError('Database is not configured. Please connect to Supabase.');
       setLoading(false);
       return;
     }
@@ -24,6 +24,18 @@ export function useProducts() {
     try {
       setLoading(true);
       console.log('🔄 Fetching products from database...');
+      
+      // Test connection first
+      const { data: testData, error: testError } = await supabase
+        .from('products')
+        .select('count')
+        .limit(1)
+        .single();
+      
+      if (testError && testError.message.includes('Failed to fetch')) {
+        throw new Error('Network connection failed. Please check your internet connection and Supabase project status.');
+      }
+      
       const { data, error: fetchError } = await supabase
         .from('products')
         .select('*')
@@ -31,7 +43,7 @@ export function useProducts() {
 
       if (fetchError) {
         console.error('Error fetching products:', fetchError);
-        setError('Failed to load products');
+        setError(`Failed to load products: ${fetchError.message}`);
         setProducts([]);
       } else {
         console.log(`✅ Fetched ${data?.length || 0} products from database`);
@@ -41,7 +53,15 @@ export function useProducts() {
       }
     } catch (err) {
       console.error('Unexpected error fetching products:', err);
-      setError('An unexpected error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+        setError('Network connection failed. Please check your internet connection and ensure your Supabase project is accessible.');
+      } else if (errorMessage.includes('CORS')) {
+        setError('CORS error: Please add your development server URL to Supabase project settings.');
+      } else {
+        setError(`Error: ${errorMessage}`);
+      }
       setProducts([]);
     } finally {
       setLoading(false);
