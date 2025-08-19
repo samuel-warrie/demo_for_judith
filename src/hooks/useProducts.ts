@@ -163,10 +163,10 @@ export function useProducts() {
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to products real-time updates!');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Real-time subscription error - Check if Realtime is enabled for products table in Supabase');
-          console.error('🔧 Go to Database → Replication in Supabase dashboard and enable products table');
+          console.warn('⚠️ Real-time subscription error - Realtime not enabled for products table');
+          console.warn('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
         } else if (status === 'TIMED_OUT') {
-          console.error('⏰ Real-time subscription timed out');
+          console.warn('⏰ Real-time subscription timed out');
         } else if (status === 'CLOSED') {
           console.warn('🔒 Real-time subscription closed');
         }
