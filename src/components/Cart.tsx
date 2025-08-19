@@ -3,6 +3,7 @@ import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useProducts } from '../hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getStripeProductByName } from '../stripe-config';
@@ -15,6 +16,7 @@ interface CartProps {
 export default function Cart({ isOpen, onClose }: CartProps) {
   const { t } = useTranslation();
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const { getProductById } = useProducts();
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
@@ -30,6 +32,36 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       return;
     }
 
+    // Check for out-of-stock items before proceeding
+    const { getProductById } = useProducts();
+    const outOfStockItems = [];
+    const availableItems = [];
+
+    for (const item of items) {
+      const currentProduct = getProductById(item.id);
+      if (!currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock) {
+        outOfStockItems.push(item);
+      } else if (currentProduct.stock_quantity < item.quantity) {
+        // Reduce quantity to available stock
+        updateQuantity(item.id, currentProduct.stock_quantity);
+        availableItems.push({ ...item, quantity: currentProduct.stock_quantity });
+      } else {
+        availableItems.push(item);
+      }
+    }
+
+    // Remove out-of-stock items from cart
+    outOfStockItems.forEach(item => removeItem(item.id));
+
+    if (outOfStockItems.length > 0) {
+      const itemNames = outOfStockItems.map(item => item.name).join(', ');
+      alert(`The following items are no longer available and have been removed from your cart: ${itemNames}`);
+    }
+
+    if (availableItems.length === 0) {
+      console.log('❌ No available items to checkout');
+      return;
+    }
     // Check if Supabase is properly configured
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -133,26 +165,89 @@ export default function Cart({ isOpen, onClose }: CartProps) {
             ) : (
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4 bg-gray-50 rounded-xl p-4">
+                  <div key={item.id} className={`flex items-center space-x-4 rounded-xl p-4 ${
+                    (() => {
+                      const currentProduct = getProductById(item.id);
+                      const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                      return isOutOfStock ? 'bg-red-50 border border-red-200' : 'bg-gray-50';
+                    })()
+                  }`}>
                     <img
                       src={item.image_url}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
-                      <p className="text-sm text-gray-500">€{item.price.toFixed(2)} {t('cart.each')}</p>
+                      <h4 className={`font-medium truncate ${
+                        (() => {
+                          const currentProduct = getProductById(item.id);
+                          const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                          return isOutOfStock ? 'text-red-700' : 'text-gray-900';
+                        })()
+                      }`}>
+                        {item.name}
+                        {(() => {
+                          const currentProduct = getProductById(item.id);
+                          const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                          return isOutOfStock ? ' (Out of Stock)' : '';
+                        })()}
+                      </h4>
+                      <p className={`text-sm ${
+                        (() => {
+                          const currentProduct = getProductById(item.id);
+                          const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                          return isOutOfStock ? 'text-red-500' : 'text-gray-500';
+                        })()
+                      }`}>
+                        €{item.price.toFixed(2)} {t('cart.each')}
+                      </p>
                       <div className="flex items-center space-x-2 mt-2">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="p-1 hover:bg-white rounded-full transition-colors"
+                          onClick={() => {
+                            const currentProduct = getProductById(item.id);
+                            const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                            if (!isOutOfStock) {
+                              updateQuantity(item.id, item.quantity - 1);
+                            }
+                          }}
+                          disabled={(() => {
+                            const currentProduct = getProductById(item.id);
+                            return !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                          })()}
+                          className={`p-1 rounded-full transition-colors ${
+                            (() => {
+                              const currentProduct = getProductById(item.id);
+                              const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                              return isOutOfStock ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-white';
+                            })()
+                          }`}
                         >
                           <Minus className="w-4 h-4 text-gray-600" />
                         </button>
                         <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="p-1 hover:bg-white rounded-full transition-colors"
+                          onClick={() => {
+                            const currentProduct = getProductById(item.id);
+                            const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                            const hasEnoughStock = currentProduct && item.quantity < currentProduct.stock_quantity;
+                            if (!isOutOfStock && hasEnoughStock) {
+                              updateQuantity(item.id, item.quantity + 1);
+                            }
+                          }}
+                          disabled={(() => {
+                            const currentProduct = getProductById(item.id);
+                            const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                            const hasEnoughStock = currentProduct && item.quantity < currentProduct.stock_quantity;
+                            return isOutOfStock || !hasEnoughStock;
+                          })()}
+                          className={`p-1 rounded-full transition-colors ${
+                            (() => {
+                              const currentProduct = getProductById(item.id);
+                              const isOutOfStock = !currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                              const hasEnoughStock = currentProduct && item.quantity < currentProduct.stock_quantity;
+                              return (isOutOfStock || !hasEnoughStock) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'hover:bg-white';
+                            })()
+                          }`}
                         >
                           <Plus className="w-4 h-4 text-gray-600" />
                         </button>
