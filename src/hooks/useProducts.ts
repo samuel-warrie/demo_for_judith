@@ -12,6 +12,7 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastFetch, setLastFetch] = useState<number>(0);
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
@@ -22,6 +23,7 @@ export function useProducts() {
 
     try {
       setLoading(true);
+      console.log('🔄 Fetching products from database...');
       const { data, error: fetchError } = await supabase
         .from('products')
         .select('*')
@@ -32,8 +34,10 @@ export function useProducts() {
         setError('Failed to load products');
         setProducts([]);
       } else {
+        console.log(`✅ Fetched ${data?.length || 0} products from database`);
         setProducts(data || []);
         setError(null);
+        setLastFetch(Date.now());
       }
     } catch (err) {
       console.error('Unexpected error fetching products:', err);
@@ -42,6 +46,11 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const refreshProducts = () => {
+    console.log('🔄 Manual refresh triggered');
+    fetchProducts();
   };
 
   const updateProductStock = async (productId: string, newStock: number) => {
@@ -57,6 +66,13 @@ export function useProducts() {
         console.error('Error updating stock:', updateError);
         return false;
       }
+      
+      // Immediately refresh products after stock update
+      setTimeout(() => {
+        console.log('🔄 Refreshing products after stock update');
+        fetchProducts();
+      }, 500);
+      
       return true;
     } catch (err) {
       console.error('Unexpected error updating stock:', err);
@@ -74,22 +90,21 @@ export function useProducts() {
   };
 
   const isLowStock = (product: Product) => {
-    return product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
+    return product.stock_quantity > 0 && product.stock_quantity <= (product.low_stock_threshold || 5);
   };
 
   const isOutOfStock = (product: Product) => {
-    return product.stock_quantity === 0;
+    return (product.stock_quantity || 0) === 0 || !product.in_stock;
   };
 
   useEffect(() => {
     fetchProducts();
     
-    // Set up real-time subscription for products table
     if (isSupabaseConfigured()) {
-      console.log('Setting up real-time subscription for products...');
+      console.log('🔗 Setting up real-time subscription for products table...');
       
       const channel = supabase
-        .channel('products-changes')
+        .channel('public:products')
         .on(
           'postgres_changes',
           {
@@ -98,17 +113,26 @@ export function useProducts() {
             table: 'products'
           },
           (payload) => {
-            console.log('Real-time update received:', payload.eventType);
-            
-            // Refetch all products to ensure consistency
-            fetchProducts();
+            console.log('📡 Real-time update received:', payload.eventType, payload);
+            console.log('🔄 Refreshing products due to real-time update...');
+            setTimeout(() => fetchProducts(), 100);
             
             // Force a re-render by updating a timestamp
             console.log('🔄 Forcing component re-render...');
           }
         )
         .subscribe((status) => {
-          console.log('📡 REAL-TIME SUBSCRIPTION STATUS:', status);
+          console.log('📡 Real-time subscription status:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Real-time updates enabled for products table');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.warn('⚠️ Real-time channel error - check if Realtime is enabled for products table');
+          } else if (status === 'TIMED_OUT') {
+            console.warn('⚠️ Real-time connection timed out');
+          } else if (status === 'CLOSED') {
+            console.warn('⚠️ Real-time connection closed');
+          }
           if (status === 'SUBSCRIBED') {
             console.log('✅ REAL-TIME UPDATES SUCCESSFULLY ENABLED FOR PRODUCTS TABLE');
             console.log('🎯 Listening for changes on public.products table');
@@ -124,6 +148,15 @@ export function useProducts() {
           }
         });
 
+      // Set up polling as fallback (every 30 seconds)
+      const pollInterval = setInterval(() => {
+        const timeSinceLastFetch = Date.now() - lastFetch;
+        if (timeSinceLastFetch > 25000) { // Only poll if no recent fetch
+          console.log('🔄 Polling for product updates...');
+          fetchProducts();
+        }
+      }, 30000);
+
       // Test the connection after a short delay
       setTimeout(() => {
         console.log('🧪 Testing real-time connection...');
@@ -132,19 +165,18 @@ export function useProducts() {
 
       // Cleanup subscription on unmount
       return () => {
-        console.log('🧹 CLEANING UP REAL-TIME SUBSCRIPTION');
+        console.log('🧹 Cleaning up real-time subscription and polling');
         supabase.removeChannel(channel);
+        clearInterval(pollInterval);
       };
-    } else {
-      console.error('❌ REAL-TIME UPDATES DISABLED - SUPABASE NOT CONFIGURED');
     }
-  }, []);
+  }, [lastFetch]);
 
   return {
     products,
     loading,
     error,
-    fetchProducts,
+    refreshProducts,
     updateProductStock,
     getProductsByCategory,
     getProductById,
