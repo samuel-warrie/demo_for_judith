@@ -16,12 +16,21 @@ interface CartProps {
 export default function Cart({ isOpen, onClose }: CartProps) {
   const { t } = useTranslation();
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
-  const { getProductById } = useProducts();
+  const { getProductById, products } = useProducts();
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
 
   if (!isOpen) return null;
+
+  // Check if any items have insufficient stock
+  const hasInsufficientStock = items.some(item => {
+    const currentProduct = getProductById(item.id);
+    if (!currentProduct) return true;
+    const isOutOfStock = currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+    const hasInsufficientStock = currentProduct.stock_quantity < item.quantity;
+    return isOutOfStock || hasInsufficientStock;
+  });
 
   const handleCheckout = async () => {
     console.log('🛒 Cart checkout initiated');
@@ -32,33 +41,9 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       return;
     }
 
-    // Check for out-of-stock items before proceeding
-    const outOfStockItems = [];
-    const availableItems = [];
-
-    for (const item of items) {
-      const currentProduct = getProductById(item.id);
-      if (!currentProduct || currentProduct.stock_quantity === 0 || !currentProduct.in_stock) {
-        outOfStockItems.push(item);
-      } else if (currentProduct.stock_quantity < item.quantity) {
-        // Reduce quantity to available stock
-        updateQuantity(item.id, currentProduct.stock_quantity);
-        availableItems.push({ ...item, quantity: currentProduct.stock_quantity });
-      } else {
-        availableItems.push(item);
-      }
-    }
-
-    // Remove out-of-stock items from cart
-    outOfStockItems.forEach(item => removeItem(item.id));
-
-    if (outOfStockItems.length > 0) {
-      const itemNames = outOfStockItems.map(item => item.name).join(', ');
-      alert(`The following items are no longer available and have been removed from your cart: ${itemNames}`);
-    }
-
-    if (availableItems.length === 0) {
-      console.log('❌ No available items to checkout');
+    // This should not be called if hasInsufficientStock is true, but adding as safety
+    if (hasInsufficientStock) {
+      console.log('❌ Cannot checkout with insufficient stock');
       return;
     }
     // Check if Supabase is properly configured
@@ -262,6 +247,18 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                       >
                         {t('cart.remove')}
                       </button>
+                      {(() => {
+                        const currentProduct = getProductById(item.id);
+                        if (!currentProduct) return null;
+                        const isOutOfStock = currentProduct.stock_quantity === 0 || !currentProduct.in_stock;
+                        const hasInsufficientStock = currentProduct.stock_quantity < item.quantity;
+                        if (isOutOfStock) {
+                          return <p className="text-xs text-red-500 mt-1">Out of stock</p>;
+                        } else if (hasInsufficientStock) {
+                          return <p className="text-xs text-orange-500 mt-1">Only {currentProduct.stock_quantity} available</p>;
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 ))}
@@ -280,9 +277,9 @@ export default function Cart({ isOpen, onClose }: CartProps) {
               <div className="space-y-2">
                 <button 
                   onClick={handleCheckout}
-                  disabled={loading || items.length === 0}
+                  disabled={loading || items.length === 0 || hasInsufficientStock}
                   className={`w-full py-3 rounded-xl font-medium transition-colors ${
-                    loading || items.length === 0
+                    loading || items.length === 0 || hasInsufficientStock
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-black text-white hover:bg-gray-800'
                   }`}
@@ -292,6 +289,8 @@ export default function Cart({ isOpen, onClose }: CartProps) {
                       <div className="w-4 h-4 border-2 border-gray-300 border-t-white rounded-full animate-spin" />
                       <span>Processing...</span>
                     </div>
+                  ) : hasInsufficientStock ? (
+                    'Insufficient Stock'
                   ) : (
                     t('cart.proceedToCheckout')
                   )}
