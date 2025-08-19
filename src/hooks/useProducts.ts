@@ -180,6 +180,8 @@ export function useProducts() {
       console.log('🔌 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
+  }
+  )
 
   return {
     products,
