@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
-// Check if Supabase is properly configured
 const isSupabaseConfigured = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -31,12 +29,9 @@ export function useProducts() {
 
       if (fetchError) {
         console.error('Error fetching products:', fetchError);
-        console.error('Detailed error:', JSON.stringify(fetchError, null, 2));
         setError('Failed to load products');
         setProducts([]);
       } else {
-        console.log('Successfully fetched products:', data);
-        console.log('Number of products:', data?.length || 0);
         setProducts(data || []);
         setError(null);
       }
@@ -50,9 +45,7 @@ export function useProducts() {
   };
 
   const updateProductStock = async (productId: string, newStock: number) => {
-    if (!isSupabaseConfigured()) {
-      return false;
-    }
+    if (!isSupabaseConfigured()) return false;
 
     try {
       const { error: updateError } = await supabase
@@ -64,16 +57,6 @@ export function useProducts() {
         console.error('Error updating stock:', updateError);
         return false;
       }
-
-      // Update local state
-      setProducts(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { ...product, stock_quantity: newStock }
-            : product
-        )
-      );
-
       return true;
     } catch (err) {
       console.error('Unexpected error updating stock:', err);
@@ -100,107 +83,48 @@ export function useProducts() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
 
-  // Set up real-time subscription
-  useEffect(() => {
     if (!isSupabaseConfigured()) {
       console.log('❌ Supabase not configured, skipping real-time setup');
       return;
     }
 
-    console.log('🔄 Setting up real-time subscription for products...');
-    
-    // Create a unique channel name to avoid conflicts
-    const channelName = `products-realtime-${Date.now()}`;
-    console.log('📡 Creating channel:', channelName);
-    
     const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        (payload) => {
-          console.log('🚀 Real-time product change detected:', payload);
-          console.log('📦 Event type:', payload.eventType);
-          console.log('📦 New data:', payload.new);
-          console.log('📦 Old data:', payload.old);
-          
-          switch (payload.eventType) {
-            case 'INSERT':
-              console.log('➕ Adding new product to state');
-              setProducts(prevProducts => {
-                const updatedProducts = [...prevProducts, payload.new as Product];
-                console.log('📈 Products count after INSERT:', updatedProducts.length);
-                return updatedProducts;
-              });
-              break;
-              
-            case 'UPDATE':
-              console.log('✏️ Updating product in state, ID:', payload.new?.id);
-              setProducts(prevProducts => {
-                const updatedProducts = prevProducts.map(product => {
-                  if (product.id === payload.new?.id) {
-                    console.log('🔄 Product before update:', {
-                      name: product.name,
-                      stock: product.stock_quantity,
-                      in_stock: product.in_stock
-                    });
-                    console.log('🔄 Product after update:', {
-                      name: payload.new.name,
-                      stock: payload.new.stock_quantity,
-                      in_stock: payload.new.in_stock
-                    });
-                    return payload.new as Product;
-                  }
-                  return product;
-                });
-                console.log('✅ Product updated in state, total products:', updatedProducts.length);
-                return updatedProducts;
-              });
-              break;
-              
-            case 'DELETE':
-              console.log('🗑️ Removing product from state');
-              setProducts(prevProducts => {
-                const updatedProducts = prevProducts.filter(product => product.id !== payload.old?.id);
-                console.log('📉 Products count after DELETE:', updatedProducts.length);
-                return updatedProducts;
-              });
-              break;
-            
-            default:
-              console.log('❓ Unknown event type:', payload.eventType);
-          }
+      .channel(`products-realtime-${Date.now()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+        console.log('Real-time change:', payload);
+
+        switch (payload.eventType) {
+          case 'INSERT':
+            setProducts(prev => [...prev, payload.new as Product]);
+            break;
+          case 'UPDATE':
+            setProducts(prev =>
+              prev.map(product =>
+                product.id === payload.new?.id ? { ...product, ...(payload.new as Product) } : product
+              )
+            );
+            break;
+          case 'DELETE':
+            setProducts(prev => prev.filter(product => product.id !== payload.old?.id));
+            break;
         }
-      )
+      })
       .subscribe((status) => {
-        console.log('📊 Real-time subscription status:', status);
-        
+        console.log('Subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to products real-time updates!');
-          console.log('🎯 Channel is now listening for changes to the products table');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.warn('⚠️ Real-time updates not available - products table replication not enabled');
-          console.warn('💡 To enable: Supabase Dashboard → Database → Replication → Enable products table');
-        } else if (status === 'TIMED_OUT') {
-          console.warn('⏰ Real-time subscription timed out - continuing without real-time updates');
-        } else if (status === 'CLOSED') {
-          console.warn('🔒 Real-time subscription closed');
-        } else {
-          console.log('📡 Subscription status:', status);
+          console.log('✅ Subscribed to products real-time updates');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('⚠️ Real-time error, attempting to reconnect...');
+          setTimeout(() => channel.subscribe(), 5000); // Reconnect after 5s
         }
       });
 
     return () => {
-      console.log('🔌 Cleaning up real-time subscription');
-      channel.unsubscribe();
+      console.log('Cleaning up subscription');
+      supabase.removeChannel(channel);
     };
-  }, []); // Only run once when component mounts
+  }, []);
 
   return {
     products,
