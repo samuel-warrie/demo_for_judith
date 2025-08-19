@@ -109,16 +109,14 @@ export function useProducts() {
       return;
     }
 
-    if (loading) {
-      console.log('⏳ Still loading products, waiting to set up real-time...');
-      return;
-    }
-
-    console.log('🔄 Setting up real-time subscription...');
-    console.log('📊 Current products count:', products.length);
+    console.log('🔄 Setting up real-time subscription for products...');
+    
+    // Create a unique channel name to avoid conflicts
+    const channelName = `products-realtime-${Date.now()}`;
+    console.log('📡 Creating channel:', channelName);
     
     const channel = supabase
-      .channel('products-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -128,44 +126,55 @@ export function useProducts() {
         },
         (payload) => {
           console.log('🚀 Real-time product change detected:', payload);
-          console.log('📦 Payload details:', {
-            eventType: payload.eventType,
-            new: payload.new,
-            old: payload.old
-          });
+          console.log('📦 Event type:', payload.eventType);
+          console.log('📦 New data:', payload.new);
+          console.log('📦 Old data:', payload.old);
           
           switch (payload.eventType) {
             case 'INSERT':
               console.log('➕ Adding new product to state');
-              setProducts(prev => {
-                const updated = [...prev, payload.new as Product];
-                console.log('📈 Products count after INSERT:', updated.length);
-                return updated;
+              setProducts(prevProducts => {
+                const updatedProducts = [...prevProducts, payload.new as Product];
+                console.log('📈 Products count after INSERT:', updatedProducts.length);
+                return updatedProducts;
               });
               break;
               
             case 'UPDATE':
-              console.log('✏️ Updating product in state, ID:', payload.new.id);
-              setProducts(prev => 
-                prev.map(product => {
-                  if (product.id === payload.new.id) {
-                    console.log('🔄 Updating product:', product.name, 'stock:', product.stock_quantity, '→', payload.new.stock_quantity);
-                    return { ...payload.new as Product };
+              console.log('✏️ Updating product in state, ID:', payload.new?.id);
+              setProducts(prevProducts => {
+                const updatedProducts = prevProducts.map(product => {
+                  if (product.id === payload.new?.id) {
+                    console.log('🔄 Product before update:', {
+                      name: product.name,
+                      stock: product.stock_quantity,
+                      in_stock: product.in_stock
+                    });
+                    console.log('🔄 Product after update:', {
+                      name: payload.new.name,
+                      stock: payload.new.stock_quantity,
+                      in_stock: payload.new.in_stock
+                    });
+                    return payload.new as Product;
                   }
                   return product;
-                })
-              );
-              console.log('✅ Product updated in state');
+                });
+                console.log('✅ Product updated in state, total products:', updatedProducts.length);
+                return updatedProducts;
+              });
               break;
               
             case 'DELETE':
               console.log('🗑️ Removing product from state');
-              setProducts(prev => {
-                const updated = prev.filter(product => product.id !== payload.old.id);
-                console.log('📉 Products count after DELETE:', updated.length);
-                return updated;
+              setProducts(prevProducts => {
+                const updatedProducts = prevProducts.filter(product => product.id !== payload.old?.id);
+                console.log('📉 Products count after DELETE:', updatedProducts.length);
+                return updatedProducts;
               });
               break;
+            
+            default:
+              console.log('❓ Unknown event type:', payload.eventType);
           }
         }
       )
@@ -174,20 +183,24 @@ export function useProducts() {
         
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to products real-time updates!');
+          console.log('🎯 Channel is now listening for changes to the products table');
         } else if (status === 'CHANNEL_ERROR') {
-          console.warn('❌ Real-time not enabled - enable products table in Supabase Dashboard → Database → Replication');
+          console.error('❌ Channel error - check if Realtime is enabled for products table');
+          console.error('💡 Go to Supabase Dashboard → Database → Replication → Enable products table');
         } else if (status === 'TIMED_OUT') {
           console.error('⏰ Real-time subscription timed out');
         } else if (status === 'CLOSED') {
           console.warn('🔒 Real-time subscription closed');
+        } else {
+          console.log('📡 Subscription status:', status);
         }
       });
 
     return () => {
       console.log('🔌 Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
-  }, [loading, products.length]);
+  }, []); // Only run once when component mounts
 
   return {
     products,
