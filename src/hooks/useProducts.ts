@@ -191,12 +191,12 @@ export function useProducts() {
             console.log('✅ REAL-TIME SUCCESSFULLY CONNECTED!');
             console.log('✅ Now listening for changes to products table');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ REAL-TIME CHANNEL ERROR - Check Supabase settings');
-            console.error('❌ Make sure real-time is enabled for the products table');
+            console.warn('⚠️ Real-time not available for products table');
+            console.warn('⚠️ To enable: Go to Supabase Dashboard → Database → Replication → Enable products table');
           } else if (status === 'CLOSED') {
             console.warn('⚠️ REAL-TIME CHANNEL CLOSED');
           } else if (status === 'TIMED_OUT') {
-            console.error('❌ REAL-TIME CONNECTION TIMED OUT');
+            console.warn('⚠️ REAL-TIME CONNECTION TIMED OUT');
           } else {
             console.log('📡 Other status:', status);
           }
