@@ -75,55 +75,9 @@ export function useProducts() {
 
   const isLowStock = (product: Product) => {
     return product.stock_quantity > 0 && product.stock_quantity <= product.low_stock_threshold;
-  };
-
-  const isOutOfStock = (product: Product) => {
-    return product.stock_quantity === 0;
-  };
-
-  useEffect(() => {
-    fetchProducts();
-
-    if (!isSupabaseConfigured()) {
-      console.log('❌ Supabase not configured, skipping real-time setup');
-      return;
-    }
-
-    const channel = supabase
-      .channel(`products-realtime-${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
-        console.log('Real-time change:', payload);
-
-        switch (payload.eventType) {
-          case 'INSERT':
-            setProducts(prev => [...prev, payload.new as Product]);
-            break;
-          case 'UPDATE':
-            setProducts(prev =>
-              prev.map(product =>
-                product.id === payload.new?.id ? { ...product, ...(payload.new as Product) } : product
-              )
-            );
-            break;
-          case 'DELETE':
-            setProducts(prev => prev.filter(product => product.id !== payload.old?.id));
-            break;
-        }
-      })
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Subscribed to products real-time updates');
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn('⚠️ Real-time error, attempting to reconnect...');
-          setTimeout(() => channel.subscribe(), 5000); // Reconnect after 5s
-        }
-      });
-
-    return () => {
-      console.log('Cleaning up subscription');
-      supabase.removeChannel(channel);
-    };
+    // Real-time updates disabled due to WebSocket connection issues
+    // To enable: Go to Supabase Dashboard → Database → Replication → Enable products table
+    console.log('ℹ️ Real-time updates disabled - refresh page to see database changes');
   }, []);
 
   return {
