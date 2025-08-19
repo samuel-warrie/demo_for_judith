@@ -171,11 +171,11 @@ export function useProducts() {
           console.log('✅ Successfully subscribed to products real-time updates!');
           console.log('🎯 Listening for changes to products table...');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Real-time subscription error - Realtime not enabled for products table');
-          console.error('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
-          console.error('🔗 Dashboard URL: https://supabase.com/dashboard/project/' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]);
+          console.warn('❌ Real-time subscription error - Realtime not enabled for products table');
+          console.warn('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
+          console.warn('🔗 Dashboard URL: https://supabase.com/dashboard/project/' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]);
         } else if (status === 'TIMED_OUT') {
-          console.error('⏰ Real-time subscription timed out - check your internet connection');
+          console.warn('⏰ Real-time subscription timed out - check your internet connection');
         } else if (status === 'CLOSED') {
           console.warn('🔒 Real-time subscription closed unexpectedly');
         } else {
