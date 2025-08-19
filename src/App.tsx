@@ -20,7 +20,7 @@ import { Product } from './types';
 
 function HomePage() {
   const { t } = useTranslation();
-  const { products, loading, error, getProductsByCategory } = useProducts();
+  const { products, loading, error, getProductsByCategory, fetchProducts } = useProducts();
 
   if (error) {
     return (
@@ -141,6 +141,25 @@ function HomePage() {
               priceRange={priceRange}
               onPriceChange={setPriceRange}
             />
+            
+            {/* Manual Refresh Button */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Database</h3>
+              <button
+                onClick={fetchProducts}
+                disabled={loading}
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                  loading
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800'
+                }`}
+              >
+                {loading ? 'Refreshing...' : 'Refresh Products'}
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                Click to sync latest changes from database
+              </p>
+            </div>
           </div>
 
           {/* Main Content */}
