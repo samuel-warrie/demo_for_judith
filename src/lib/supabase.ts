@@ -36,18 +36,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
     }
   });
   
-  // Add connection status logging
-  supabase.realtime.onOpen(() => {
-    console.log('✅ Supabase real-time connection opened');
-  });
-  
-  supabase.realtime.onClose(() => {
-    console.log('🔒 Supabase real-time connection closed');
-  });
-  
-  supabase.realtime.onError((error) => {
-    console.error('❌ Supabase real-time error:', error);
-  });
 }
 
 export { supabase };
