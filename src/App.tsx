@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import { useProducts } from './hooks/useProducts';
+import { useWebSocketProducts } from './hooks/useWebSocketProducts';
 import { useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
 import LoginForm from './components/LoginForm';
@@ -20,7 +20,7 @@ import { Product } from './types';
 
 function HomePage() {
   const { t } = useTranslation();
-  const { products, loading, error, getProductsByCategory, refreshProducts } = useProducts();
+  const { products, loading, error, connected, getProductsByCategory, refreshProducts } = useWebSocketProducts();
 
   if (error) {
     return (
@@ -42,11 +42,9 @@ function HomePage() {
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
 
-  // Debug logging
-  console.log('Products loading state:', loading);
-  console.log('Products error:', error);
-  console.log('Products data:', products);
-  console.log('Products length:', products.length);
+  // Show connection status for debugging
+  console.log('WebSocket connected:', connected);
+  console.log('Products loaded:', products.length);
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);

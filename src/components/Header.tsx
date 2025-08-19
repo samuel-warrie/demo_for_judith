@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useProducts } from '../hooks/useProducts';
+import { useWebSocketProducts } from '../hooks/useWebSocketProducts';
 import Cart from './Cart';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginForm from './LoginForm';
@@ -17,7 +17,7 @@ export default function Header({ onSearchChange }: HeaderProps) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
-  const { refreshProducts } = useProducts();
+  const { refreshProducts, connected } = useWebSocketProducts();
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -90,10 +90,11 @@ export default function Header({ onSearchChange }: HeaderProps) {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className={`p-2 text-gray-600 hover:text-black transition-colors ${
-                  refreshing ? 'animate-spin' : ''
+                className={`p-2 transition-colors ${
+                  connected ? 'text-green-600 hover:text-green-700' : 'text-gray-600 hover:text-black'
+                } ${refreshing ? 'animate-spin' : ''
                 }`}
-                title="Refresh products"
+                title={connected ? 'Real-time connected' : 'Refresh products'}
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
