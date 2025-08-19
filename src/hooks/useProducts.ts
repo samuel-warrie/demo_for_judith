@@ -152,15 +152,15 @@ export function useProducts() {
               );
               break;
               
-            case 'DELETE':
+            console.log('✅ Successfully subscribed to products real-time updates!');
               console.log('🗑️ Product deleted:', payload.old);
-              setProducts(prev => 
-                prev.filter(product => product.id !== payload.old.id)
-              );
+            console.warn('❌ Real-time subscription error - Realtime not enabled for products table');
+            console.warn('💡 To enable: Go to Database → Replication in Supabase dashboard and enable products table');
+            console.warn(`🔗 Dashboard URL: https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}`);
               break;
-            
+            console.warn('⏰ Real-time subscription timed out');
             default:
-              console.log('❓ Unknown event type:', payload.eventType);
+            console.warn('🔒 Real-time subscription closed unexpectedly');
           }
         }
       )
@@ -185,7 +185,7 @@ export function useProducts() {
 
     // Test the connection after a short delay
     setTimeout(() => {
-      console.log('🧪 Testing real-time connection...');
+            console.warn('🚨 Real-time subscription error details:', err);
       console.log('📺 Channel state:', channel.state);
       console.log('🔌 Socket state:', supabase.realtime.channels.length, 'channels active');
     }, 2000);
