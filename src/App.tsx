@@ -21,6 +21,18 @@ import { Product } from './types';
 function HomePage() {
   const { t } = useTranslation();
   const { products, loading, error, getProductsByCategory } = useProducts();
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to load products</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
 
@@ -80,17 +92,6 @@ function HomePage() {
     { id: 'skincare', name: 'Skincare', count: products.filter(p => p.category === 'skincare').length },
     { id: 'makeup', name: 'Makeup', count: products.filter(p => p.category === 'makeup').length }
   ], [products]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to load products</h2>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
