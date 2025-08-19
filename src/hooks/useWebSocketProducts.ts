@@ -62,11 +62,14 @@ export function useWebSocketProducts() {
       
       // Clean up existing subscription
       if (channelRef.current) {
+        console.log('🧹 Cleaning up existing channel');
         channelRef.current.unsubscribe();
       }
 
       // Create new channel with unique name
       const channelName = `products-realtime-${Date.now()}`;
+      console.log('📡 Creating channel:', channelName);
+      
       const channel = supabase
         .channel(channelName)
         .on(
@@ -105,6 +108,7 @@ export function useWebSocketProducts() {
             
             // Stop polling since real-time is working
             if (pollingIntervalRef.current) {
+              console.log('🛑 Stopping polling - real-time is active');
               clearInterval(pollingIntervalRef.current);
               pollingIntervalRef.current = null;
             }
@@ -120,6 +124,8 @@ export function useWebSocketProducts() {
             console.log('🔌 Real-time connection closed - using smart polling fallback');
             setConnected(false);
             startSmartPolling();
+          } else {
+            console.log('📡 Real-time status:', status);
           }
         });
 
