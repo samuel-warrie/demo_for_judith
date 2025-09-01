@@ -34,17 +34,6 @@ export default function BookingModal({ onClose }: BookingModalProps) {
     
     // Close modal and redirect to Stripe payment link
     onClose();
-    // Store booking intent in localStorage
-    localStorage.setItem('booking_intent', JSON.stringify({
-      timestamp: Date.now(),
-      adultMediaConsent,
-      childMediaConsent: hasMinor ? childMediaConsent : null,
-      hasMinor,
-      termsAccepted: true
-    }));
-    
-    // Close modal and redirect to Stripe payment link
-    onClose();
     window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
   };
 
@@ -370,7 +359,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    {t('booking.acceptTerms')}
+                    Continue to Payment
                   </button>
                 </>
               )}
@@ -380,6 +369,17 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                   className="text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   {t('booking.back')}
+                </button>
+                <button
+                  onClick={handlePayDeposit}
+                  disabled={loading}
+                  className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+                    loading
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-black text-white hover:bg-gray-800'
+                  }`}
+                >
+                  {loading ? 'Processing...' : 'Pay Deposit'}
                 </button>
               )}
             </div>
