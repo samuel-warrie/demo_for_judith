@@ -23,81 +23,18 @@ export default function BookingModal({ onClose }: BookingModalProps) {
   const canProceed = adultMediaConsent !== '' && (!hasMinor || childMediaConsent !== '') && termsAccepted;
 
   const handlePayDeposit = async () => {
-    setLoading(true);
+    // Store booking intent in localStorage before redirecting to Stripe
+    localStorage.setItem('booking_intent', JSON.stringify({
+      timestamp: Date.now(),
+      adultMediaConsent,
+      childMediaConsent: hasMinor ? childMediaConsent : null,
+      hasMinor,
+      termsAccepted: true
+    }));
     
-    try {
-      // Check if Supabase is properly configured
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        alert('Payment system is not configured. Please set up Supabase environment variables to enable payments.');
-        return;
-      }
-      
-      // Store booking intent in localStorage before redirecting to Stripe
-      localStorage.setItem('booking_intent', JSON.stringify({
-        timestamp: Date.now(),
-        adultMediaConsent,
-        childMediaConsent: hasMinor ? childMediaConsent : null,
-        hasMinor
-      }));
-      
-      // Convert consent values to descriptive text
-      const getAdultConsentText = (consent: MediaConsentAdult | '') => {
-        switch (consent) {
-          case 'visible': return 'I want my face to be used in marketing materials';
-          case 'none': return 'I do not want any photos/videos used for marketing';
-          case 'hidden': return 'I allow photos/videos but only with my face hidden/blurred';
-          default: return 'No option selected';
-        }
-      };
-
-      const getChildConsentText = (consent: MediaConsentChild | '') => {
-        switch (consent) {
-          case 'child-visible': return 'Parent allows child\'s face to be used in marketing materials';
-          case 'child-none': return 'Parent does not want any photos/videos of child used for marketing';
-          case 'child-hidden': return 'Parent allows photos/videos of child but only with face hidden/blurred';
-          default: return 'No option selected';
-        }
-      };
-
-      // Create Stripe checkout session
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          price_id: bookingDepositProduct.priceId,
-          mode: bookingDepositProduct.mode,
-          success_url: `${window.location.origin}/booking-success`,
-          cancel_url: window.location.href,
-          metadata: {
-            booking_type: 'appointment_deposit',
-            terms_accepted: 'Customer has read and accepted all terms and conditions',
-            adult_media_consent: getAdultConsentText(adultMediaConsent),
-            has_minor: hasMinor.toString(),
-            child_media_consent: hasMinor ? getChildConsentText(childMediaConsent) : 'Not applicable - no minor involved',
-            consent_timestamp: new Date().toISOString()
-          }
-        }
-      });
-      
-      if (error) {
-        console.error('Error creating checkout session:', error);
-        alert('Failed to create payment session. Please try again.');
-        return;
-      }
-      
-      if (data?.url) {
-        onClose();
-        window.location.href = data.url;
-      } else {
-        alert('Failed to create payment session. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // Close modal and redirect to Stripe payment link
+    onClose();
+    window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
   };
 
   return (
