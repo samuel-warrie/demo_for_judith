@@ -127,6 +127,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
       adultMediaConsent,
       childMediaConsent: hasMinor ? childMediaConsent : null,
       hasMinor
+    }));
     
     // Create URL with consent data as query parameters for Stripe
     const baseUrl = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
@@ -151,6 +152,8 @@ export default function BookingModal({ onClose }: BookingModalProps) {
     
     const stripePaymentLink = 'https://buy.stripe.com/test_your_payment_link_here';
     window.location.href = stripePaymentLink;
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
@@ -465,7 +468,20 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                     Cancel
                   </button>
                   <button
-                    onClick={handlePayDeposit}
+                    onClick={() => {
+                      // Store booking intent in localStorage before redirecting to Stripe
+                      localStorage.setItem('booking_intent', JSON.stringify({
+                        timestamp: Date.now(),
+                        adultMediaConsent,
+                        childMediaConsent: hasMinor ? childMediaConsent : null,
+                        hasMinor,
+                        termsAccepted: true
+                      }));
+                      
+                      // Close modal and redirect to Stripe payment link
+                      onClose();
+                      window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
+                    }}
                     disabled={!canProceed}
                     className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
                       canProceed
@@ -473,7 +489,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    {loading ? 'Processing...' : t('booking.acceptTerms')}
+                    {t('booking.acceptTerms')}
                   </button>
                 </>
               )}
