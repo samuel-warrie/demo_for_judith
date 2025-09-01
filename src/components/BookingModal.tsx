@@ -351,7 +351,20 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                     Cancel
                   </button>
                   <button
-                    onClick={() => setStep('payment')}
+                    onClick={() => {
+                      // Store booking intent in localStorage before redirecting to Stripe
+                      localStorage.setItem('booking_intent', JSON.stringify({
+                        timestamp: Date.now(),
+                        adultMediaConsent,
+                        childMediaConsent: hasMinor ? childMediaConsent : null,
+                        hasMinor,
+                        termsAccepted: true
+                      }));
+                      
+                      // Close modal and redirect to Stripe payment link
+                      onClose();
+                      window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
+                    }}
                     disabled={!canProceed}
                     className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
                       canProceed
@@ -359,7 +372,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    Continue to Payment
+                    {t('booking.acceptTerms')}
                   </button>
                 </>
               )}
