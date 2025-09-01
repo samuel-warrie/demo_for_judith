@@ -23,18 +23,55 @@ export default function BookingModal({ onClose }: BookingModalProps) {
   const canProceed = adultMediaConsent !== '' && (!hasMinor || childMediaConsent !== '') && termsAccepted;
 
   const handlePayDeposit = async () => {
+    // Convert consent values to descriptive text for Stripe metadata
+    const getAdultConsentText = (consent: MediaConsentAdult | '') => {
+      switch (consent) {
+        case 'visible': return 'I want my face to be used in marketing materials';
+        case 'none': return 'I do not want any photos/videos used for marketing';
+        case 'hidden': return 'I allow photos/videos but only with my face hidden/blurred';
+        default: return 'No option selected';
+      }
+    };
+
+    const getChildConsentText = (consent: MediaConsentChild | '') => {
+      switch (consent) {
+        case 'child-visible': return 'Parent allows child\'s face to be used in marketing materials';
+        case 'child-none': return 'Parent does not want any photos/videos of child used for marketing';
+        case 'child-hidden': return 'Parent allows photos/videos of child but only with face hidden/blurred';
+        default: return 'No option selected';
+      }
+    };
+
     // Store booking intent in localStorage before redirecting to Stripe
     localStorage.setItem('booking_intent', JSON.stringify({
       timestamp: Date.now(),
       adultMediaConsent,
       childMediaConsent: hasMinor ? childMediaConsent : null,
-      hasMinor,
-      termsAccepted: true
+      hasMinor
     }));
+    
+    // Create URL with consent data as query parameters for Stripe
+    const baseUrl = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
+    const params = new URLSearchParams({
+      'client_reference_id': `booking_${Date.now()}`,
+      'prefilled_email': '',
+      // Note: Stripe payment links have limited metadata support
+      // The consent data will be stored in localStorage and can be retrieved after payment
+    });
     
     // Close modal and redirect to Stripe payment link
     onClose();
-    window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
+    
+    // Store additional metadata for post-payment processing
+    localStorage.setItem('stripe_booking_metadata', JSON.stringify({
+      adult_media_consent: getAdultConsentText(adultMediaConsent),
+      has_minor: hasMinor.toString(),
+      child_media_consent: hasMinor ? getChildConsentText(childMediaConsent) : 'Not applicable - no minor involved',
+      consent_timestamp: new Date().toISOString(),
+      terms_accepted: 'Customer has read and accepted all terms and conditions'
+    }));
+    
+    window.location.href = baseUrl;
   };
 
   return (
