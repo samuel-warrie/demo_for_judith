@@ -126,27 +126,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {step === 'initial' && (
-              <div className="p-8 text-center">
-                <div className="max-w-2xl mx-auto">
-                  <div className="flex justify-center mb-6">
-                    <Calendar className="w-16 h-16 text-black" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('booking.readyToBook')}</h3>
-                  <p className="text-gray-600 mb-8">
-                    {t('booking.description')}
-                  </p>
-                  <button
-                    onClick={() => setStep('terms')}
-                    className="bg-black text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
-                  >
-                    {t('booking.viewTerms')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {step === 'terms' && (
+            {(step === 'initial' || step === 'terms') && (
               <div className="p-8">
                 <div className="max-w-4xl mx-auto">
                   {/* Terms Content */}
@@ -425,13 +405,13 @@ export default function BookingModal({ onClose }: BookingModalProps) {
           {/* Footer */}
           <div className="border-t border-gray-200 p-6 bg-gray-50">
             <div className="flex justify-between items-center">
-              {step === 'terms' && (
+              {(step === 'initial' || step === 'terms') && (
                 <>
                   <button
-                    onClick={() => setStep('initial')}
+                    onClick={onClose}
                     className="text-gray-600 hover:text-gray-800 transition-colors"
                   >
-                    {t('booking.back')}
+                    Cancel
                   </button>
                   <button
                     onClick={() => setStep('payment')}
@@ -448,7 +428,7 @@ export default function BookingModal({ onClose }: BookingModalProps) {
               )}
               {step === 'payment' && (
                 <button
-                  onClick={() => setStep('terms')}
+                  onClick={() => setStep('initial')}
                   className="text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   {t('booking.back')}
