@@ -34,6 +34,17 @@ export default function BookingModal({ onClose }: BookingModalProps) {
     
     // Close modal and redirect to Stripe payment link
     onClose();
+    // Store booking intent in localStorage
+    localStorage.setItem('booking_intent', JSON.stringify({
+      timestamp: Date.now(),
+      adultMediaConsent,
+      childMediaConsent: hasMinor ? childMediaConsent : null,
+      hasMinor,
+      termsAccepted: true
+    }));
+    
+    // Close modal and redirect to Stripe payment link
+    onClose();
     window.location.href = 'https://buy.stripe.com/test_fZu8wR3TmfsPbWt8HM8so00';
   };
 
