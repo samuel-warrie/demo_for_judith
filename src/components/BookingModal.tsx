@@ -364,23 +364,25 @@ export default function BookingModal({ onClose }: BookingModalProps) {
                 </>
               )}
               {step === 'payment' && (
-                <button
-                  onClick={() => setStep('initial')}
-                  className="text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  {t('booking.back')}
-                </button>
-                <button
-                  onClick={handlePayDeposit}
-                  disabled={loading}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                    loading
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-black text-white hover:bg-gray-800'
-                  }`}
-                >
-                  {loading ? 'Processing...' : 'Pay Deposit'}
-                </button>
+                <>
+                  <button
+                    onClick={() => setStep('initial')}
+                    className="text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {t('booking.back')}
+                  </button>
+                  <button
+                    onClick={handlePayDeposit}
+                    disabled={loading}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+                      loading
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-black text-white hover:bg-gray-800'
+                    }`}
+                  >
+                    {loading ? 'Processing...' : 'Pay Deposit'}
+                  </button>
+                </>
               )}
             </div>
           </div>
