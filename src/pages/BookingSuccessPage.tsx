@@ -13,7 +13,7 @@ export default function BookingSuccessPage() {
         if (prev <= 1) {
           clearInterval(countdownInterval);
           // Redirect to Fresha booking system
-          window.location.href = 'https://fresha.com';
+          window.location.href = 'https://www.fresha.com/a/beloved-beauty-and-hair-studio-oulu-merikoskenkatu-sry0x4m3';
           return 0;
         }
         return prev - 1;
@@ -51,7 +51,7 @@ export default function BookingSuccessPage() {
           </div>
 
           <a
-            href="https://fresha.com"
+            href="https://www.fresha.com/a/beloved-beauty-and-hair-studio-oulu-merikoskenkatu-sry0x4m3"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 transition-colors"
