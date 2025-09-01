@@ -16,6 +16,7 @@ import SuccessPage from './pages/SuccessPage';
 import BookingPage from './pages/BookingPage';
 import BookingSuccessPage from './pages/BookingSuccessPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import BookingModal from './components/BookingModal';
 import { Product } from './types';
 
 function HomePage() {
