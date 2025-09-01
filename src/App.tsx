@@ -23,6 +23,7 @@ function HomePage() {
   const { user } = useAuth();
   const { planName, isActive } = useSubscription();
   const { products, loading, error, connected, getProductsByCategory, refreshProducts } = useWebSocketProducts();
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   if (error) {
     return (
@@ -121,6 +122,16 @@ function HomePage() {
                 <span>{t('hero.features.expertApproved')}</span>
               </div>
             </div>
+            
+            {/* Book Appointment Button */}
+            <div className="mt-8">
+              <button
+                onClick={() => setShowBookingModal(true)}
+                className="bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+              >
+                {t('hero.bookAppointment')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -187,6 +198,11 @@ function HomePage() {
           </div>
         </div>
       </footer>
+      
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <BookingModal onClose={() => setShowBookingModal(false)} />
+      )}
     </div>
   );
 }

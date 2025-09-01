@@ -13,6 +13,7 @@
   "hero": {
     "title": "Kauneutta joka inspiroi",
     "subtitle": "Löydä premium kauneustuotteita jokapäiväiseen hehkuusi",
+    "bookAppointment": "Varaa aika",
     "features": {
       "freeShipping": "Ilmainen toimitus yli 5€",
       "returns": "30 päivän palautusoikeus",
@@ -71,6 +72,8 @@
     "bookNow": "Varaa nyt",
     "termsAndConditions": "Käyttöehdot",
     "termsDescription": "Lue ja hyväksy ehtomme ennen jatkamista",
+    "viewTerms": "Näytä ehdot & jatka",
+    "paymentStep": "Maksu",
     "mediaConsent": "Mediasuostumus",
     "termsAccepted": "Ehdot hyväksytty",
     "thankYou": "Kiitos ehtojen hyväksymisestä. Varmistaaksesi aikasi, maksa 10€ varausmaksu. Tämä summa vähennetään lopullisesta laskustasi.",

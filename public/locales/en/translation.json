@@ -13,6 +13,7 @@
   "hero": {
     "title": "Beauty That Inspires",
     "subtitle": "Discover premium beauty products for your everyday glow",
+    "bookAppointment": "Book Appointment",
     "features": {
       "freeShipping": "Free Shipping Over €5",
       "returns": "30-Day Returns",
@@ -71,6 +72,8 @@
     "bookNow": "Book Now",
     "termsAndConditions": "Terms and Conditions",
     "termsDescription": "Please read and accept our terms before proceeding",
+    "viewTerms": "View Terms & Continue",
+    "paymentStep": "Payment",
     "mediaConsent": "Media Consent",
     "termsAccepted": "Terms Accepted",
     "thankYou": "Thank you for accepting our terms and conditions. To secure your appointment, please pay the €10 booking deposit. This amount will be applied to your final bill.",

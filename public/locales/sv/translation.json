@@ -13,6 +13,7 @@
   "hero": {
     "title": "Skönhet som inspirerar",
     "subtitle": "Upptäck premium skönhetsprodukter för din dagliga glöd",
+    "bookAppointment": "Boka tid",
     "features": {
       "freeShipping": "Fri frakt över €5",
       "returns": "30 dagars retur",
@@ -71,6 +72,8 @@
     "bookNow": "Boka nu",
     "termsAndConditions": "Villkor",
     "termsDescription": "Läs och acceptera våra villkor innan du fortsätter",
+    "viewTerms": "Visa villkor & fortsätt",
+    "paymentStep": "Betalning",
     "mediaConsent": "Mediasamtycke",
     "termsAccepted": "Villkor accepterade",
     "thankYou": "Tack för att du accepterat våra villkor. För att säkra din tid, betala €10 bokningsavgiften. Detta belopp kommer att dras av från din slutliga räkning.",
