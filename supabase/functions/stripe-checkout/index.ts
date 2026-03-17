@@ -45,63 +45,102 @@ Deno.serve(async (req) => {
 
     const { price_id, line_items, success_url, cancel_url, mode, metadata } = await req.json();
 
-    // Validate parameters - either price_id OR line_items should be provided
-    let error;
-    
-    if (line_items) {
-      // Multi-item checkout validation
-      error = validateParameters(
-        { line_items, success_url, cancel_url, mode },
-        {
-         line_items: 'array',
-          cancel_url: 'string',
-          success_url: 'string',
-          mode: { values: ['payment', 'subscription'] },
-        },
-      );
-      
-      if (!error && (!Array.isArray(line_items) || line_items.length === 0)) {
-        error = 'line_items must be a non-empty array';
-      }
-      
-      if (!error) {
-        for (const item of line_items) {
-          if (!item.price_id || typeof item.price_id !== 'string') {
-            error = 'Each line item must have a valid price_id';
-            break;
-          }
-          if (!item.quantity || typeof item.quantity !== 'number' || item.quantity < 1) {
-            error = 'Each line item must have a valid quantity (number >= 1)';
-            break;
+    // Validate basic parameters
+    if (!success_url || !cancel_url || !mode) {
+      return corsResponse({ error: 'Missing required parameters' }, 400);
+    }
+
+    if (!['payment', 'subscription'].includes(mode)) {
+      return corsResponse({ error: 'Mode must be payment or subscription' }, 400);
+    }
+
+    // Process line items - create Stripe products/prices if needed
+    let processedLineItems = [];
+
+    if (line_items && Array.isArray(line_items) && line_items.length > 0) {
+      // Multi-item checkout
+      for (const item of line_items) {
+        if (!item.quantity || item.quantity < 1) {
+          return corsResponse({ error: 'Each item must have quantity >= 1' }, 400);
+        }
+
+        let priceId = item.price_id;
+
+        // If no price_id, create product and price on the fly
+        if (!priceId && item.product_id && item.product_name && item.product_price) {
+          try {
+            // Fetch from Supabase to check if we already have Stripe IDs
+            const { data: product } = await supabase
+              .from('products')
+              .select('stripe_product_id, stripe_price_id')
+              .eq('id', item.product_id)
+              .maybeSingle();
+
+            if (product?.stripe_price_id) {
+              priceId = product.stripe_price_id;
+            } else {
+              // Create Stripe product and price
+              const stripeProduct = await stripe.products.create({
+                name: item.product_name,
+                description: item.product_description || undefined,
+                images: item.product_image ? [item.product_image] : undefined,
+                metadata: {
+                  supabase_product_id: item.product_id,
+                },
+              });
+
+              const stripePrice = await stripe.prices.create({
+                product: stripeProduct.id,
+                unit_amount: Math.round(item.product_price * 100),
+                currency: 'dkk',
+              });
+
+              priceId = stripePrice.id;
+
+              // Update Supabase with new Stripe IDs
+              await supabase
+                .from('products')
+                .update({
+                  stripe_product_id: stripeProduct.id,
+                  stripe_price_id: stripePrice.id,
+                })
+                .eq('id', item.product_id);
+
+              console.log(`Created Stripe product ${stripeProduct.id} for ${item.product_name}`);
+            }
+          } catch (err: any) {
+            console.error(`Failed to create Stripe product for ${item.product_name}:`, err.message);
+            return corsResponse({ error: `Failed to process product: ${item.product_name}` }, 500);
           }
         }
+
+        if (!priceId) {
+          return corsResponse({ error: 'Each item must have price_id or product details' }, 400);
+        }
+
+        processedLineItems.push({
+          price: priceId,
+          quantity: item.quantity,
+        });
       }
     } else if (price_id) {
-      // Single item checkout validation (backward compatibility)
-      error = validateParameters(
-        { price_id, success_url, cancel_url, mode },
-        {
-          cancel_url: 'string',
-          price_id: 'string',
-          success_url: 'string',
-          mode: { values: ['payment', 'subscription'] },
-        },
-      );
+      // Single item with existing price_id
+      processedLineItems = [{
+        price: price_id,
+        quantity: 1,
+      }];
     } else {
-      error = 'Either price_id or line_items must be provided';
+      return corsResponse({ error: 'Either price_id or line_items required' }, 400);
     }
 
-    if (error) {
-      return corsResponse({ error }, 400);
-    }
-
-    // Create checkout session with appropriate line items
-    let sessionConfig: any = {
+    // Create checkout session
+    const sessionConfig: any = {
       payment_method_types: ['card', 'mobilepay'],
       mode,
       success_url,
       cancel_url,
       customer_creation: 'always',
+      line_items: processedLineItems,
       custom_fields: [
         {
           key: 'full_name',
@@ -118,26 +157,10 @@ Deno.serve(async (req) => {
       ],
       ...(metadata && { metadata }),
     };
-    
-    if (line_items) {
-      // Multi-item checkout
-      sessionConfig.line_items = line_items.map(item => ({
-        price: item.price_id,
-        quantity: item.quantity,
-      }));
-    } else {
-      // Single item checkout (backward compatibility)
-      sessionConfig.line_items = [
-        {
-          price: price_id,
-          quantity: 1,
-        },
-      ];
-    }
-    
+
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    console.log(`Created checkout session ${session.id} for guest customer`);
+    console.log(`Created checkout session ${session.id}`);
 
     return corsResponse({ sessionId: session.id, url: session.url });
   } catch (error: any) {

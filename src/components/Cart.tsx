@@ -64,32 +64,31 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       
       // Convert cart items to line items for Stripe
       const lineItems = [];
-      
+
       for (const item of items) {
-        if (!item.stripe_price_id) {
-          console.error('❌ No Stripe price ID for product:', item.name);
-          alert(`Payment configuration error for "${item.name}". Please contact support.`);
-          return;
-        }
-        
         lineItems.push({
-          price_id: item.stripe_price_id,
+          price_id: item.stripe_price_id || undefined,
+          product_id: item.id,
+          product_name: item.name,
+          product_price: item.price,
+          product_description: item.description,
+          product_image: item.image_url,
           quantity: item.quantity
         });
       }
-      
+
       console.log('✅ Created line items for checkout:', lineItems);
       console.log('📡 Creating checkout session...');
-      
+
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           line_items: lineItems,
-          mode: 'payment', // All products are one-time payments
+          mode: 'payment',
           success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: window.location.href,
           metadata: {
             order_type: 'product_purchase',
-            terms_accepted: 'true' // Products don't require explicit T&C acceptance
+            terms_accepted: 'true'
           }
         }
       });
